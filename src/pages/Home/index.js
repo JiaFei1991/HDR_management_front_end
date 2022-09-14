@@ -10,6 +10,10 @@ import "antd/dist/antd.css";
 
 import { useSelector } from "react-redux";
 
+import { store } from "../../app/store";
+
+import { userApiSlice } from "../../features/users/userSlice";
+
 import {
   useGetAllUsersQuery,
   selectAllUsers,
@@ -41,24 +45,28 @@ const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
 );
 
 const HomePage = () => {
-  const {
-    data: users,
-    isLoading,
-    isSuccess,
-    isError,
-    error,
-  } = useGetAllUsersQuery();
+  //   const {
+  //     data: users,
+  //     isLoading,
+  //     isSuccess,
+  //     isError,
+  //     error,
+  //   } = useGetAllUsersQuery();
 
-  let displayContent;
-  if (isLoading) {
-    displayContent = <p>...is loading for the first time</p>;
-  } else if (isSuccess) {
-    displayContent = JSON.stringify(users);
-  } else if (isError) {
-    displayContent = <p>{JSON.stringify(error)}</p>;
-  }
+  //   let displayContent;
+  //   if (isLoading) {
+  //     displayContent = <p>...is loading for the first time</p>;
+  //   } else if (isSuccess) {
+  //     displayContent = JSON.stringify(users);
+  //   } else if (isError) {
+  //     displayContent = <p>{JSON.stringify(error)}</p>;
+  //   }
 
   // console.log(useSelector(selectAllUsers));
+
+  store.dispatch(userApiSlice.endpoints.getAllUsers.initiate());
+
+  const users = useSelector(selectAllUsers);
 
   return (
     <div className="app-container">
@@ -107,7 +115,7 @@ const HomePage = () => {
                 minHeight: 280,
               }}
             >
-              {displayContent}
+              {users}
             </Content>
           </Layout>
         </Layout>
