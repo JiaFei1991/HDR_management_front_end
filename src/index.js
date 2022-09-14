@@ -7,8 +7,6 @@ import { store } from "./app/store";
 
 import { userApiSlice } from "./features/users/userSlice";
 
-// store.dispatch(userApiSlice.endpoints.getAllUsers.initiate());
-
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(

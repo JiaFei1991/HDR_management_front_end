@@ -3,21 +3,13 @@ import {
   NotificationOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Breadcrumb, Layout, Menu } from "antd";
+import { Breadcrumb, Layout, Menu, Space } from "antd";
 import React from "react";
 import "./index.css";
 import "antd/dist/antd.css";
 
-import { useSelector } from "react-redux";
-
-import { store } from "../../app/store";
-
-import { userApiSlice } from "../../features/users/userSlice";
-
-import {
-  useGetAllUsersQuery,
-  selectAllUsers,
-} from "../../features/users/userSlice";
+import { useGetAllUsersQuery } from "../../features/users/userSlice";
+import { Usercard } from "../../features/users/userCard";
 
 const { Header, Content, Sider } = Layout;
 
@@ -45,28 +37,35 @@ const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
 );
 
 const HomePage = () => {
-  //   const {
-  //     data: users,
-  //     isLoading,
-  //     isSuccess,
-  //     isError,
-  //     error,
-  //   } = useGetAllUsersQuery();
+  const {
+    data: users,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  } = useGetAllUsersQuery();
 
-  //   let displayContent;
-  //   if (isLoading) {
-  //     displayContent = <p>...is loading for the first time</p>;
-  //   } else if (isSuccess) {
-  //     displayContent = JSON.stringify(users);
-  //   } else if (isError) {
-  //     displayContent = <p>{JSON.stringify(error)}</p>;
-  //   }
+  let displayContent;
+  if (isLoading) {
+    displayContent = <p>...is loading for the first time</p>;
+  } else if (isSuccess) {
+    // displayContent = JSON.stringify(users);
+    displayContent = users.map((oneUser) => {
+      return (
+        <Usercard
+          key={oneUser.id}
+          title={oneUser.name}
+          description={oneUser.role}
+          avatar={oneUser.avatar}
+        />
+      );
+    });
+  } else if (isError) {
+    displayContent = <p>{JSON.stringify(error)}</p>;
+  }
 
-  // console.log(useSelector(selectAllUsers));
-
-  store.dispatch(userApiSlice.endpoints.getAllUsers.initiate());
-
-  const users = useSelector(selectAllUsers);
+  // const users = useSelector(selectAllUsers);
+  // console.log(users);
 
   return (
     <div className="app-container">
@@ -115,7 +114,7 @@ const HomePage = () => {
                 minHeight: 280,
               }}
             >
-              {users}
+              <Space wrap>{displayContent}</Space>
             </Content>
           </Layout>
         </Layout>
