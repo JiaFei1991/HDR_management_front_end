@@ -1,0 +1,29 @@
+.login-form-container {
+  height: 250px;
+  width: 50%;
+  margin: auto;
+  text-align: center;
+  /* border: 3px solid green; */
+}
+
+.login-header {
+  height: 50px;
+  margin: auto;
+  text-align: center;
+}
+
+.site-layout-background {
+  background: #fff;
+  border-radius: 25px;
+  opacity: 0.8;
+}
+
+h1 {
+  font-weight: bold;
+  font-size: 32px;
+}
+
+h2 {
+  font-weight: bold;
+  font-size: 24px;
+}
