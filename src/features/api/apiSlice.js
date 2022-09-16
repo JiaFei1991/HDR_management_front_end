@@ -9,12 +9,13 @@ export const apiSlice = createApi({
     credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth.token;
+      const refreshToken = getState().auth.refreshToken;
 
       // If we have a token set in state, let's assume that we should be passing it.
-      if (token) {
+      if (token && refreshToken) {
         headers.set('authorization', `Bearer ${token}`);
+        headers.set('refreshtoken', `Bearer ${refreshToken}`);
       }
-
       return headers;
     }
   }),
