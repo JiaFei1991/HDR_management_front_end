@@ -1,21 +1,21 @@
 import {
   LaptopOutlined,
   NotificationOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import { Breadcrumb, Layout, Menu, Space } from "antd";
-import React from "react";
-import "./index.css";
-import "antd/dist/antd.css";
+  UserOutlined
+} from '@ant-design/icons';
+import { Breadcrumb, Layout, Menu, Space } from 'antd';
+import React from 'react';
+import './index.css';
+import 'antd/dist/antd.css';
 
-import { useGetAllUsersQuery } from "../../features/users/userSlice";
-import { Usercard } from "../../features/users/userCard";
+import { useGetAllUsersQuery } from '../../features/users/userSlice';
+import { Usercard } from '../../features/users/userCard';
 
 const { Header, Content, Sider } = Layout;
 
-const items1 = ["1", "2", "3"].map((key) => ({
+const items1 = ['1', '2', '3'].map((key) => ({
   key,
-  label: `nav ${key}`,
+  label: `nav ${key}`
 }));
 
 const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
@@ -29,9 +29,9 @@ const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
         const subKey = index * 4 + j + 1;
         return {
           key: subKey,
-          label: `option${subKey}`,
+          label: `option${subKey}`
         };
-      }),
+      })
     };
   }
 );
@@ -42,7 +42,7 @@ const HomePage = () => {
     isLoading,
     isSuccess,
     isError,
-    error,
+    error
   } = useGetAllUsersQuery();
 
   let displayContent;
@@ -69,37 +69,36 @@ const HomePage = () => {
 
   return (
     <div className="app-container">
-      <Layout style={{ height: "100vh" }}>
-        <Header className="header">
-          <div className="logo" />
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            defaultSelectedKeys={["2"]}
-            items={items1}
-          />
+      <Layout style={{ height: '100vh' }}>
+        <Header className="header" style={{ backgroundColor: 'darkcyan' }}>
+          {/* <div className="logo">
+            <img
+              alt="uow_logo"
+              src="http://localhost:8000/logos/uow_logo.jpg"
+            />
+          </div> */}
         </Header>
         <Layout>
           <Sider width={200} className="site-layout-background">
             <Menu
               mode="inline"
-              defaultSelectedKeys={["1"]}
-              defaultOpenKeys={["sub1"]}
+              defaultSelectedKeys={['1']}
+              defaultOpenKeys={['sub1']}
               style={{
-                height: "100%",
-                borderRight: 0,
+                height: '100%',
+                borderRight: 0
               }}
               items={items2}
             />
           </Sider>
           <Layout
             style={{
-              padding: "0 24px 24px",
+              padding: '0 24px 24px'
             }}
           >
             <Breadcrumb
               style={{
-                margin: "16px 0",
+                margin: '16px 0'
               }}
             >
               <Breadcrumb.Item>Home</Breadcrumb.Item>
@@ -111,7 +110,7 @@ const HomePage = () => {
               style={{
                 padding: 24,
                 margin: 0,
-                minHeight: 280,
+                minHeight: 280
               }}
             >
               <Space wrap>{displayContent}</Space>

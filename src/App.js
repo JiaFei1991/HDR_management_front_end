@@ -9,8 +9,8 @@ class App extends React.Component {
     return (
       // <div className="app-container">
       <Routes>
-        <Route exact path="/login" element={<LoginPage />} />
-        <Route exact path="/" element={<HomePage />} />
+        <Route exact path="/" element={<LoginPage />} />
+        <Route exact path="/home" element={<HomePage />} />
       </Routes>
       // </div>
     );

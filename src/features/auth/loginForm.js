@@ -13,9 +13,8 @@ const LoginForm = () => {
     console.log('Received values of form: ', values);
     try {
       const response = await dispatch(login(values)).unwrap();
-      //   debugger;
       console.log(response);
-      navigate('/');
+      navigate('/home');
     } catch (err) {
       console.log(err);
     }
