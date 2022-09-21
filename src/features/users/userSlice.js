@@ -9,15 +9,29 @@ import { apiSlice } from '../api/apiSlice';
 
 const initialState = {
   registerModalOpen: false,
-  supervisors: undefined
+  supervisorsName: undefined,
+  studentsName: undefined
 };
 
-export const allSupervisors = createAsyncThunk(
-  'user/allSupervisors',
+export const getAllSupervisorsName = createAsyncThunk(
+  'user/getAllSupervisorsName',
   async () => {
     const response = await axios({
       method: 'get',
       url: 'http://localhost:8000/HDRapi/v1/users/supervisors',
+      withCredentials: true
+    });
+
+    return response.data;
+  }
+);
+
+export const getAllStudentsName = createAsyncThunk(
+  'user/getAllStudentsName',
+  async () => {
+    const response = await axios({
+      method: 'get',
+      url: 'http://localhost:8000/HDRapi/v1/users/students',
       withCredentials: true
     });
 
@@ -54,8 +68,11 @@ const userSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(allSupervisors.fulfilled, (state, action) => {
-        state.supervisors = action.payload.data;
+      .addCase(getAllSupervisorsName.fulfilled, (state, action) => {
+        state.supervisorsName = action.payload.data;
+      })
+      .addCase(getAllStudentsName.fulfilled, (state, action) => {
+        state.studentsName = action.payload.data;
       })
       .addCase(createNewUser.fulfilled, (state, action) => {
         // state.currentLoginUser = action.payload.data;

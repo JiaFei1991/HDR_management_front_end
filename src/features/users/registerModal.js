@@ -32,7 +32,7 @@ const RegisterModal = () => {
   return (
     <>
       <Modal
-        title="Title"
+        title="User account creation"
         open={open}
         // onOk={handleOk}
         // confirmLoading={confirmLoading}

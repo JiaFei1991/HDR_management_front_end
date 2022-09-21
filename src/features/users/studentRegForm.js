@@ -11,7 +11,7 @@ const { Option } = Select;
 const StudentRegForm = ({ role }) => {
   const dispatch = useDispatch();
   //   const navigate = useNavigate();
-  const supervisors = useSelector((state) => state.user.supervisors);
+  const supervisors = useSelector((state) => state.user.supervisorsName);
 
   const [imageUrl, setImageUrl] = useState();
   const [uploadFileError, setUploadFileError] = useState();

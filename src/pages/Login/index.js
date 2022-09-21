@@ -3,13 +3,17 @@ import React from 'react';
 import LoginForm from '../../features/auth/loginForm';
 import './index.css';
 import { useDispatch } from 'react-redux';
-import { allSupervisors } from '../../features/users/userSlice';
+import {
+  getAllSupervisorsName,
+  getAllStudentsName
+} from '../../features/users/userSlice';
 
 const { Content } = Layout;
 
 const LoginPage = () => {
   const dispatch = useDispatch();
-  dispatch(allSupervisors());
+  dispatch(getAllSupervisorsName());
+  dispatch(getAllStudentsName());
   return (
     <>
       <Layout
