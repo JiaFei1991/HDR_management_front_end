@@ -4,6 +4,8 @@ import React from 'react';
 import { login } from './authSlice';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
+import RegisterModal from '../users/registerModal';
+import { openModal } from '../users/userSlice';
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -20,66 +22,75 @@ const LoginForm = () => {
     }
   };
 
+  const onClickRegister = () => {
+    dispatch(openModal(true));
+  };
+
   return (
-    <Form
-      name="normal_login"
-      className="login-form"
-      initialValues={{
-        remember: true
-      }}
-      onFinish={onFinish}
-    >
-      <Form.Item
-        name="userEmail"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your Email!'
-          }
-        ]}
+    <>
+      <Form
+        name="normal_login"
+        className="login-form"
+        initialValues={{
+          remember: true
+        }}
+        onFinish={onFinish}
       >
-        <Input
-          prefix={<UserOutlined className="site-form-item-icon" />}
-          placeholder="Email"
-          style={{ maxWidth: '400px' }}
-        />
-      </Form.Item>
+        <Form.Item
+          name="userEmail"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your Email!'
+            }
+          ]}
+        >
+          <Input
+            prefix={<UserOutlined className="site-form-item-icon" />}
+            placeholder="Email"
+            style={{ maxWidth: '400px' }}
+          />
+        </Form.Item>
 
-      <Form.Item
-        name="userPassword"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your Password!'
-          }
-        ]}
-      >
-        <Input
-          prefix={<LockOutlined className="site-form-item-icon" />}
-          type="password"
-          placeholder="Password"
-          style={{ maxWidth: '400px' }}
-        />
-      </Form.Item>
+        <Form.Item
+          name="userPassword"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your Password!'
+            }
+          ]}
+        >
+          <Input
+            prefix={<LockOutlined className="site-form-item-icon" />}
+            type="password"
+            placeholder="Password"
+            style={{ maxWidth: '400px' }}
+          />
+        </Form.Item>
 
-      <Form.Item>
-        <Button type="primary" htmlType="submit" className="login-form-button">
-          Log in
-        </Button>
-      </Form.Item>
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="login-form-button"
+          >
+            Log in
+          </Button>
+        </Form.Item>
 
-      <Form.Item>
-        <Space>
-          <a className="login-form-register" href="">
-            register
-          </a>
-          Or
-          <a className="login-form-forgot" href="">
-            Forgot password
-          </a>
-        </Space>
-      </Form.Item>
-    </Form>
+        <Form.Item>
+          <Space>
+            <a className="login-form-register" onClick={onClickRegister}>
+              register
+            </a>
+            Or
+            <a className="login-form-forgot">Forgot password</a>
+          </Space>
+        </Form.Item>
+      </Form>
+      <RegisterModal />
+    </>
   );
 };
 

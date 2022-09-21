@@ -1,5 +1,70 @@
-import { createEntityAdapter, createSelector } from "@reduxjs/toolkit";
-import { apiSlice } from "../api/apiSlice";
+import {
+  createEntityAdapter,
+  createSelector,
+  createSlice,
+  createAsyncThunk
+} from '@reduxjs/toolkit';
+import axios from 'axios';
+import { apiSlice } from '../api/apiSlice';
+
+const initialState = {
+  registerModalOpen: false,
+  supervisors: undefined
+};
+
+export const allSupervisors = createAsyncThunk(
+  'user/allSupervisors',
+  async () => {
+    const response = await axios({
+      method: 'get',
+      url: 'http://localhost:8000/HDRapi/v1/users/supervisors',
+      withCredentials: true
+    });
+
+    return response.data;
+  }
+);
+
+export const createNewUser = createAsyncThunk(
+  'user/createNewUser',
+  async (formData) => {
+    const response = await axios({
+      method: 'post',
+      url: 'http://localhost:8000/HDRapi/v1/users/signup',
+      withCredentials: true,
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    return response.data;
+  }
+);
+
+const userSlice = createSlice({
+  name: 'user',
+  initialState,
+  reducers: {
+    openModal: (state, action) => {
+      action.payload
+        ? (state.registerModalOpen = true)
+        : (state.registerModalOpen = false);
+    }
+  },
+  extraReducers(builder) {
+    builder
+      .addCase(allSupervisors.fulfilled, (state, action) => {
+        state.supervisors = action.payload.data;
+      })
+      .addCase(createNewUser.fulfilled, (state, action) => {
+        // state.currentLoginUser = action.payload.data;
+      });
+  }
+});
+
+export const { openModal } = userSlice.actions;
+export default userSlice.reducer;
 
 // const userAdapter = createEntityAdapter();
 
@@ -8,18 +73,18 @@ import { apiSlice } from "../api/apiSlice";
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllUsers: builder.query({
-      query: () => "/users",
+      query: () => '/users',
       transformResponse: (responseData) => {
         // return userAdapter.setAll(initialUsersState, responseData.data.users);
         return responseData.data.users;
       },
-      providesTags: ["Users"],
+      providesTags: ['Users']
       // providesTags: (result, error, arg) => [
       //   { type: "Post", id: "LIST" },
       //   ...result.ids.map((id) => ({ type: "Post", id })),
       // ],
-    }),
-  }),
+    })
+  })
 });
 
 // // returns the query result object

@@ -10,6 +10,8 @@ import 'antd/dist/antd.css';
 
 import { useGetAllUsersQuery } from '../../features/users/userSlice';
 import { Usercard } from '../../features/users/userCard';
+import LogoutButton from '../../features/auth/logoutButton';
+import AvatarButton from '../../features/auth/avatarButton';
 
 const { Header, Content, Sider } = Layout;
 
@@ -49,7 +51,7 @@ const HomePage = () => {
   if (isLoading) {
     displayContent = <p>...is loading for the first time</p>;
   } else if (isSuccess) {
-    // displayContent = JSON.stringify(users);
+    console.log(users);
     displayContent = users.map((oneUser) => {
       return (
         <Usercard
@@ -70,13 +72,24 @@ const HomePage = () => {
   return (
     <div className="app-container">
       <Layout style={{ height: '100vh' }}>
-        <Header className="header" style={{ backgroundColor: 'darkcyan' }}>
+        <Header
+          className="header"
+          style={{
+            backgroundColor: 'darkcyan',
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center',
+            justifyContent: 'flex-end'
+          }}
+        >
           {/* <div className="logo">
             <img
               alt="uow_logo"
               src="http://localhost:8000/logos/uow_logo.jpg"
             />
           </div> */}
+          <AvatarButton />
+          <LogoutButton />
         </Header>
         <Layout>
           <Sider width={200} className="site-layout-background">

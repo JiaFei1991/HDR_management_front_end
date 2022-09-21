@@ -11,7 +11,6 @@ const initialState = {
 };
 
 export const login = createAsyncThunk('auth/login', async (loginDetails) => {
-  //   debugger;
   const response = await axios({
     method: 'post',
     url: 'http://localhost:8000/HDRapi/v1/users/login',
@@ -25,19 +24,52 @@ export const login = createAsyncThunk('auth/login', async (loginDetails) => {
   return response.data;
 });
 
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async (arg, { getState }) => {
+    const token = getState().auth.token;
+    const refreshToken = getState().auth.refreshToken;
+    if (!token || !refreshToken) {
+      console.log('token missing in logout process.');
+      return;
+    }
+    // debugger;
+    const response = await axios({
+      method: 'get',
+      url: 'http://localhost:8000/HDRapi/v1/users/logout',
+      headers: {
+        authorization: `Bearer ${token}`,
+        refreshtoken: `Bearer ${refreshToken}`
+      },
+      withCredentials: true
+    });
+
+    return response.data;
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {},
   extraReducers(builder) {
-    builder.addCase(login.fulfilled, (state, action) => {
-      const returnObj = {
-        loggedinUser: action.payload.user,
-        token: Cookies.get('jwt'),
-        refreshToken: Cookies.get('jwtRefresh')
-      };
-      return returnObj;
-    });
+    builder
+      .addCase(login.fulfilled, (state, action) => {
+        const returnObj = {
+          loggedinUser: action.payload.user,
+          token: Cookies.get('jwt'),
+          refreshToken: Cookies.get('jwtRefresh')
+        };
+        return returnObj;
+      })
+      .addCase(logout.fulfilled, (state, action) => {
+        const returnObj = {
+          loggedinUser: undefined,
+          token: Cookies.get('jwt'),
+          refreshToken: Cookies.get('jwtRefresh')
+        };
+        return returnObj;
+      });
   }
 });
 

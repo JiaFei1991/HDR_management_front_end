@@ -1,0 +1,17 @@
+h1,
+h2,
+h3 {
+  /* align-self:flex-end; */
+  margin-bottom: 0px;
+}
+
+.link {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+}
+.link:hover {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00f;
+}

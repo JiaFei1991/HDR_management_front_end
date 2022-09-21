@@ -2,16 +2,20 @@ import { Layout, Space } from 'antd';
 import React from 'react';
 import LoginForm from '../../features/auth/loginForm';
 import './index.css';
+import { useDispatch } from 'react-redux';
+import { allSupervisors } from '../../features/users/userSlice';
 
 const { Content } = Layout;
 
 const LoginPage = () => {
+  const dispatch = useDispatch();
+  dispatch(allSupervisors());
   return (
     <>
       <Layout
         style={{
           height: '100vh',
-          minWidth: '1000px',
+          minWidth: '1500px',
           backgroundImage:
             'url(http://localhost:8000/backgrounds/login-background.png)',
           backgroundRepeat: 'no-repeat',
@@ -23,7 +27,7 @@ const LoginPage = () => {
           style={{
             padding: 24,
             minHeight: 280,
-            minWidth: 800,
+            minWidth: 1000,
             margin: 'auto',
             marginTop: '50px',
             marginBottom: '50px'
