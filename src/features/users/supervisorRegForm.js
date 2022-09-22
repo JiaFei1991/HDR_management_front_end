@@ -11,7 +11,7 @@ import {
   notification
 } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import { openModal, createNewUser } from './userSlice';
+import { openModal, createNewUser, createNewSupervisor } from './userSlice';
 // import { useNavigate } from 'react-router';
 
 const { Option } = Select;
@@ -19,7 +19,7 @@ const { Option } = Select;
 const SupervisorRegForm = ({ role }) => {
   const dispatch = useDispatch();
   //   const navigate = useNavigate();
-  const students = useSelector((state) => state.user.studentsName);
+  const allStudentsName = useSelector((state) => state.user.studentsName);
 
   const [imageUrl, setImageUrl] = useState();
   const [uploadFileError, setUploadFileError] = useState();
@@ -35,21 +35,25 @@ const SupervisorRegForm = ({ role }) => {
       message: 'Important Notice',
       description:
         'The creation of a supervisor account needs to be approved by an admin. An email will be sent to you notifying the result of your application.',
-      duration: 0
+      duration: 5
     };
     notification.open(args);
   };
 
-  const submitForm = (students) => async (values) => {
-    values['role'] = role;
-    values['avatar'] = values.avatar[0].originFileObj;
-
-    for (let item of students) {
-      if (values.supervisors === item.name) {
-        values.supervisors = item._id;
-        break;
+  const submitForm = (allStudentsName) => async (values) => {
+    let studentIds = [];
+    values.students.forEach((aStudent) => {
+      for (let item of allStudentsName) {
+        if (aStudent === item.name) {
+          studentIds.push(item._id);
+        }
       }
-    }
+    });
+
+    values['role'] = role;
+    values['DoB'] = values.DoB._d;
+    values['avatar'] = values.avatar[0].originFileObj;
+    values['studentIds'] = studentIds;
 
     console.log(values);
 
@@ -58,11 +62,17 @@ const SupervisorRegForm = ({ role }) => {
       formData.append(name, values[name]);
     }
 
-    // await dispatch(createNewUser(formData));
-    // message.success(
-    //   'Application to create supervisor account successfully generated. Wait for email approval!'
-    // );
-    // dispatch(openModal(false));
+    const response = await dispatch(createNewUser(formData));
+    // console.log('----------------------------');
+    // console.log(response);
+
+    if (response) {
+      // TODO: display a spinner
+      message.success(
+        'Application to create supervisor account successfully generated. Wait for email approval!'
+      );
+      dispatch(openModal(false));
+    }
   };
 
   const dummyRequest = ({ file, onSuccess }) => {
@@ -115,7 +125,7 @@ const SupervisorRegForm = ({ role }) => {
   };
 
   let studentList;
-  if (!students) {
+  if (!allStudentsName) {
     setpickerDisabled(true);
     studentList = (
       <Option value="disabled" disabled>
@@ -123,7 +133,7 @@ const SupervisorRegForm = ({ role }) => {
       </Option>
     );
   } else {
-    studentList = students.map((student) => {
+    studentList = allStudentsName.map((student) => {
       return (
         <Option key={student.name} value={`${student.name}`}>
           {student.name}
@@ -189,7 +199,7 @@ const SupervisorRegForm = ({ role }) => {
         span: 14
       }}
       layout="horizontal"
-      onFinish={submitForm(students)}
+      onFinish={submitForm(allStudentsName)}
     >
       <Form.Item label="Name" name="name" rules={formRules('name')}>
         <Input name="name-input" />

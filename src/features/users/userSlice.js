@@ -56,6 +56,20 @@ export const createNewUser = createAsyncThunk(
   }
 );
 
+// export const createNewSupervisor = createAsyncThunk(
+//   'user/createNewUser',
+//   async (data) => {
+//     const response = await axios({
+//       method: 'post',
+//       url: 'http://localhost:8000/HDRapi/v1/users/signup',
+//       withCredentials: true,
+//       data: data
+//     });
+
+//     return response.data;
+//   }
+// );
+
 const userSlice = createSlice({
   name: 'user',
   initialState,

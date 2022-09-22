@@ -51,7 +51,7 @@ const HomePage = () => {
   if (isLoading) {
     displayContent = <p>...is loading for the first time</p>;
   } else if (isSuccess) {
-    console.log(users);
+    // console.log(users);
     displayContent = users.map((oneUser) => {
       return (
         <Usercard
