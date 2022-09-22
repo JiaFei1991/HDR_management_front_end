@@ -14,10 +14,19 @@ const StudentRegForm = ({ role }) => {
   const supervisors = useSelector((state) => state.user.supervisorsName);
 
   const [imageUrl, setImageUrl] = useState();
+  const [spin, setSpin] = useState(false);
+  const [formDisable, setFormDisable] = useState(false);
   const [uploadFileError, setUploadFileError] = useState();
   const [submitDisabled, setsubmitDisabled] = useState(false);
 
+  const onClickSubmitButton = (value) => {
+    setFormDisable(value);
+    setSpin(value);
+  };
+
   const submitForm = (supervisors) => async (values) => {
+    onClickSubmitButton(true);
+
     values['role'] = role;
     values['DoB'] = values.DoB._d;
     values['MoA'] = values.MoA._d;
@@ -37,11 +46,17 @@ const StudentRegForm = ({ role }) => {
       formData.append(name, values[name]);
     }
 
-    await dispatch(createNewUser(formData));
-    message.success(
-      'Student account successfully created, log in with email and password!'
-    );
-    dispatch(openModal(false));
+    const response = await dispatch(createNewUser(formData));
+
+    // TODO: handle the failed case by extracting failure message from the payload
+    if (response.payload.status === 'success') {
+      message.success(
+        'Student account successfully created, log in with email and password!',
+        5
+      );
+      onClickSubmitButton(false);
+      dispatch(openModal(false));
+    }
   };
 
   const dummyRequest = ({ file, onSuccess }) => {
@@ -166,6 +181,7 @@ const StudentRegForm = ({ role }) => {
         span: 14
       }}
       layout="horizontal"
+      disabled={formDisable}
       onFinish={submitForm(supervisors)}
     >
       <Form.Item label="Name" name="name" rules={formRules('name')}>
@@ -268,6 +284,7 @@ const StudentRegForm = ({ role }) => {
           type="primary"
           htmlType="submit"
           name="submit-button"
+          loading={spin}
           disabled={submitDisabled}
         >
           Create Account

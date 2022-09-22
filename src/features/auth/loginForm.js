@@ -1,11 +1,13 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input, Space } from 'antd';
+import { Button, Form, Input, Space } from 'antd';
 import React from 'react';
 import { login } from './authSlice';
 import { useNavigate } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import RegisterModal from '../users/registerModal';
+import ForgotPassModal from '../auth/forgotPassModal';
 import { openModal } from '../users/userSlice';
+import { openForgotPassModal } from './authSlice';
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -24,6 +26,10 @@ const LoginForm = () => {
 
   const onClickRegister = () => {
     dispatch(openModal(true));
+  };
+
+  const onClickForgotPass = () => {
+    dispatch(openForgotPassModal(true));
   };
 
   return (
@@ -85,11 +91,14 @@ const LoginForm = () => {
               register
             </a>
             Or
-            <a className="login-form-forgot">Forgot password</a>
+            <a className="login-form-forgot" onClick={onClickForgotPass}>
+              Forgot password
+            </a>
           </Space>
         </Form.Item>
       </Form>
       <RegisterModal />
+      <ForgotPassModal />
     </>
   );
 };

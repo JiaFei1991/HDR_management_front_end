@@ -11,7 +11,7 @@ import {
   notification
 } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import { openModal, createNewUser, createNewSupervisor } from './userSlice';
+import { openModal, createNewUser } from './userSlice';
 // import { useNavigate } from 'react-router';
 
 const { Option } = Select;
@@ -22,6 +22,8 @@ const SupervisorRegForm = ({ role }) => {
   const allStudentsName = useSelector((state) => state.user.studentsName);
 
   const [imageUrl, setImageUrl] = useState();
+  const [spin, setSpin] = useState(false);
+  const [formDisable, setFormDisable] = useState(false);
   const [uploadFileError, setUploadFileError] = useState();
   const [submitDisabled, setsubmitDisabled] = useState(false);
   const [pickerDisabled, setpickerDisabled] = useState(false);
@@ -40,7 +42,13 @@ const SupervisorRegForm = ({ role }) => {
     notification.open(args);
   };
 
+  const onClickSubmitButton = (value) => {
+    setFormDisable(value);
+    setSpin(value);
+  };
+
   const submitForm = (allStudentsName) => async (values) => {
+    onClickSubmitButton(true);
     let studentIds = [];
     values.students.forEach((aStudent) => {
       for (let item of allStudentsName) {
@@ -63,14 +71,14 @@ const SupervisorRegForm = ({ role }) => {
     }
 
     const response = await dispatch(createNewUser(formData));
-    // console.log('----------------------------');
-    // console.log(response);
 
-    if (response) {
-      // TODO: display a spinner
+    // TODO: handle the failed case by extracting failure message from the payload
+    if (response.payload.status === 'success') {
       message.success(
-        'Application to create supervisor account successfully generated. Wait for email approval!'
+        'Application to create supervisor account successfully generated. Wait for email approval!',
+        5
       );
+      onClickSubmitButton(false);
       dispatch(openModal(false));
     }
   };
@@ -189,7 +197,6 @@ const SupervisorRegForm = ({ role }) => {
     }
   ];
 
-  // <h3></h3>
   return (
     <Form
       labelCol={{
@@ -199,6 +206,7 @@ const SupervisorRegForm = ({ role }) => {
         span: 14
       }}
       layout="horizontal"
+      disabled={formDisable}
       onFinish={submitForm(allStudentsName)}
     >
       <Form.Item label="Name" name="name" rules={formRules('name')}>
@@ -267,6 +275,8 @@ const SupervisorRegForm = ({ role }) => {
           htmlType="submit"
           name="submit-button"
           disabled={submitDisabled}
+          // onClick={onClickSubmitButton}
+          loading={spin}
         >
           Create Account
         </Button>

@@ -7,7 +7,8 @@ import Cookies from 'js-cookie';
 const initialState = {
   loggedinUser: undefined,
   token: undefined,
-  refreshToken: undefined
+  refreshToken: undefined,
+  forgotPassModalOpen: false
 };
 
 export const login = createAsyncThunk('auth/login', async (loginDetails) => {
@@ -48,10 +49,32 @@ export const logout = createAsyncThunk(
   }
 );
 
+export const resetPassword = createAsyncThunk(
+  'auth/resetPassword',
+  async (input) => {
+    const response = await axios({
+      method: 'post',
+      url: 'http://localhost:8000/HDRapi/v1/users/forgetpassword',
+      data: {
+        email: input.email
+      },
+      withCredentials: true
+    });
+
+    return response.data;
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    openForgotPassModal: (state, action) => {
+      action.payload
+        ? (state.forgotPassModalOpen = true)
+        : (state.forgotPassModalOpen = false);
+    }
+  },
   extraReducers(builder) {
     builder
       .addCase(login.fulfilled, (state, action) => {
@@ -77,6 +100,7 @@ export const selectLoggedinUser = (state) => state.loggedinUser;
 export const selectToken = (state) => state.token;
 export const selectRefreshToken = (state) => state.refreshToken;
 
+export const { openForgotPassModal } = authSlice.actions;
 export default authSlice.reducer;
 
 // const userAdapter = createEntityAdapter();
