@@ -2,6 +2,7 @@ import { Button, Modal, Form, Input, message } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { openForgotPassModal, resetPassword } from './authSlice';
+import axios from 'axios';
 
 const RegisterModal = () => {
   const dispatch = useDispatch();
@@ -22,13 +23,21 @@ const RegisterModal = () => {
     const response = await dispatch(resetPassword(formValues));
 
     // TODO: handle the failed case by extracting failure message from the payload
-    if (response.payload.status === 'success') {
-      message.success(
-        'The password reset email has been sent to the provided account!',
-        5
-      );
-      onClickSubmitButton(false);
-      dispatch(openForgotPassModal(false));
+    if (response) {
+      console.log(response);
+      if (response.payload && response.payload.status === 'success') {
+        message.success(
+          'The password reset email has been sent to the provided account!',
+          5
+        );
+        onClickSubmitButton(false);
+        dispatch(openForgotPassModal(false));
+      }
+      if (response.payload && response.payload.status === 'fail') {
+        message.error(`${response.payload.message}`, 5);
+        onClickSubmitButton(false);
+        dispatch(openForgotPassModal(false));
+      }
     }
   };
 

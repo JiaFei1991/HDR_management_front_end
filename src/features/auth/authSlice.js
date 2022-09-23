@@ -52,16 +52,24 @@ export const logout = createAsyncThunk(
 export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
   async (input) => {
-    const response = await axios({
-      method: 'post',
-      url: 'http://localhost:8000/HDRapi/v1/users/forgetpassword',
-      data: {
-        email: input.email
-      },
-      withCredentials: true
-    });
+    let response;
+    try {
+      response = await axios({
+        method: 'post',
+        url: 'http://localhost:8000/HDRapi/v1/users/forgetpassword',
+        data: {
+          email: input.email
+        },
+        withCredentials: true
+      });
 
-    return response.data;
+      return response.data;
+    } catch (err) {
+      if (!err.response) {
+        throw err;
+      }
+      return err.response.data;
+    }
   }
 );
 
@@ -93,6 +101,10 @@ const authSlice = createSlice({
         };
         return returnObj;
       });
+    // .addCase(resetPassword.rejected, (state, action) => {
+    //   console.log(action.payload);
+    //   return action.payload;
+    // });
   }
 });
 
