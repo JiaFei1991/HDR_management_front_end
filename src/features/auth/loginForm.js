@@ -3,7 +3,7 @@ import { Button, Form, Input, Space } from 'antd';
 import React from 'react';
 import { login } from './authSlice';
 import { useNavigate } from 'react-router';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import RegisterModal from '../users/registerModal';
 import ForgotPassModal from '../auth/forgotPassModal';
 import { openModal } from '../users/userSlice';
@@ -13,12 +13,20 @@ const LoginForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // const loggedinUser = useSelector((state) => state.auth.loggedinUser);
+
   const onFinish = async (values) => {
     console.log('Received values of form: ', values);
     try {
+      // const response = await dispatch(login(values)).unwrap();
+      // console.log(response);
       const response = await dispatch(login(values)).unwrap();
-      console.log(response);
-      navigate('/home');
+      const loggedinUser = response.user;
+      if (loggedinUser) {
+        loggedinUser.role === 'student'
+          ? navigate('/home')
+          : navigate('/home/schedule');
+      }
     } catch (err) {
       console.log(err);
     }

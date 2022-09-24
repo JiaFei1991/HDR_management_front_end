@@ -2,10 +2,13 @@ import {
   LaptopOutlined,
   NotificationOutlined,
   UserOutlined,
-  RadarChartOutlined
+  RadarChartOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, Space, Calendar, Tooltip } from 'antd';
 import React from 'react';
+import { useNavigate } from 'react-router';
+import { Outlet } from 'react-router-dom';
 import './index.css';
 import 'antd/dist/antd.css';
 
@@ -13,35 +16,17 @@ import { useGetAllUsersQuery } from '../../features/users/userSlice';
 import { Usercard } from '../../features/users/userCard';
 import LogoutButton from '../../features/auth/logoutButton';
 import AvatarButton from '../../features/auth/avatarButton';
-
 import TodayList from '../../features/schedules/todayList';
+
+import SchedulePage from '../Schedule';
+import { useSelector } from 'react-redux';
 
 const { Header, Content, Sider } = Layout;
 
-const items1 = ['1', '2', '3'].map((key) => ({
-  key,
-  label: `nav ${key}`
-}));
-
-const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
-  (icon, index) => {
-    const key = String(index + 1);
-    return {
-      key: `sub${key}`,
-      icon: React.createElement(icon)
-      // label: `subnav ${key}`,
-      // children: new Array(4).fill(null).map((_, j) => {
-      //   const subKey = index * 4 + j + 1;
-      //   return {
-      //     key: subKey
-      //     // label: `option${subKey}`
-      //   };
-      // })
-    };
-  }
-);
-
 const HomePage = () => {
+  const navigate = useNavigate();
+  const loggedinUser = useSelector((state) => state.auth.loggedinUser);
+  // const [displayContent, setDisplayContent] = useState(undefined);
   const {
     data: users,
     isLoading,
@@ -80,11 +65,7 @@ const HomePage = () => {
     );
   };
 
-  const menuItems = [
-    {
-      key: 1,
-      icon: menuIconGenerator(<UserOutlined />, 'my menu item')
-    },
+  let studentMenuItems = [
     {
       key: 2,
       icon: menuIconGenerator(<LaptopOutlined />, 'my menu item')
@@ -92,8 +73,31 @@ const HomePage = () => {
     {
       key: 3,
       icon: menuIconGenerator(<NotificationOutlined />, 'my menu item')
+    },
+    {
+      key: 'schedules',
+      icon: menuIconGenerator(<CalendarOutlined />, 'Schedules')
     }
   ];
+
+  const supervisorMenuItems = [
+    ...studentMenuItems,
+    {
+      key: 'students',
+      icon: menuIconGenerator(<UserOutlined />, 'Students')
+    }
+  ];
+
+  // console.log(studentMenuItems);
+  // console.log(supervisorMenuItems);
+
+  // debugger;
+
+  let menuItems;
+  if (loggedinUser) {
+    menuItems =
+      loggedinUser.role === 'student' ? studentMenuItems : supervisorMenuItems;
+  }
 
   const dateCellRender = (value) => {
     if (value.date() === 21) {
@@ -102,9 +106,17 @@ const HomePage = () => {
     return;
   };
 
+  const handleMenuClick = ({ key }) => {
+    console.log(key);
+    if (key === 'schedules') {
+      // displayContent = <SchedulePage />;
+      navigate('/home/schedule');
+    }
+  };
+
   return (
     <div className="app-container">
-      <Layout style={{ height: '100vh' }}>
+      <Layout style={{ height: '80vh' }}>
         <Sider width={60} className="site-layout-background">
           <div className="icon-container">
             <RadarChartOutlined style={{ fontSize: 35 }} />
@@ -113,11 +125,10 @@ const HomePage = () => {
             mode="inline"
             style={{
               height: '100%',
-              // borderRight: 0,
               width: 60
-              // border: 'auto'
             }}
             items={menuItems}
+            onClick={handleMenuClick}
           />
         </Sider>
         <Layout style={{ height: '100vh' }}>
@@ -129,7 +140,7 @@ const HomePage = () => {
               gap: '10px',
               alignItems: 'center',
               justifyContent: 'flex-end',
-              height: 60
+              height: '8vh'
             }}
           >
             <AvatarButton />
@@ -155,18 +166,35 @@ const HomePage = () => {
                 style={{
                   padding: 24,
                   margin: 0,
-                  minHeight: 280
+                  minHeight: 280,
+                  minWidth: 400
                 }}
               >
-                <Space wrap>{displayContent}</Space>
+                {/* <Space wrap>{displayContent}</Space> */}
+                <Outlet />
               </Content>
             </Layout>
+
             <Sider width={400} className="site-layout-background">
               <Calendar
                 fullscreen={false}
                 dateCellRender={dateCellRender}
-                style={{ width: 400 }}
+                style={{
+                  width: 400,
+                  maxHeight: '45vh'
+                  // borderBottom: '1px solid black'
+                }}
               />
+              <div
+                style={{
+                  height: '6vh',
+                  overflow: 'auto',
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+              >
+                <h3>Today's tasks</h3>
+              </div>
               <TodayList />
             </Sider>
           </Layout>

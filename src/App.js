@@ -1,20 +1,20 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 import HomePage from './pages/Home';
 import LoginPage from './pages/Login';
+import SchedulePage from './pages/Schedule';
 
-class App extends React.Component {
-  render() {
-    return (
-      // <div className="app-container">
-      <Routes>
-        <Route exact path="/" element={<LoginPage />} />
-        <Route exact path="/home" element={<HomePage />} />
-      </Routes>
-      // </div>
-    );
-  }
-}
+const App = () => {
+  return (
+    <Routes>
+      <Route exact path="/" element={<LoginPage />} />
+      <Route exact path="/home" element={<HomePage />}>
+        {/* <Route index element={<HomePage />} /> */}
+        <Route path="schedule" element={<SchedulePage />} />
+      </Route>
+    </Routes>
+  );
+};
 
 export default App;

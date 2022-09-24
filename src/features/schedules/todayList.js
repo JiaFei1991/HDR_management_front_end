@@ -32,10 +32,10 @@ const TodayList = () => {
     <div
       id="scrollableDiv"
       style={{
-        height: 400,
+        maxHeight: '42vh',
         overflow: 'auto',
-        padding: '0 16px',
-        border: '1px solid rgba(140, 140, 140, 0.35)'
+        padding: '0 16px'
+        // border: '1px solid rgba(140, 140, 140, 0.35)'
       }}
     >
       <InfiniteScroll

@@ -12,12 +12,13 @@
 }
 
 .site-layout-background {
+  height: 92vh;
   background: #fff;
 }
 
 .icon-container {
   width: 60px;
-  height: 60px;
+  height: 8vh;
   background: #fff;
   display: flex;
   align-items: center;
