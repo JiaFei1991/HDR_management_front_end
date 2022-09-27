@@ -1,19 +1,14 @@
-import {
-  LaptopOutlined,
-  NotificationOutlined,
-  UserOutlined,
-  RadarChartOutlined,
-  CalendarOutlined
-} from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, Space, Calendar, Tooltip } from 'antd';
-import React from 'react';
+import { RadarChartOutlined } from '@ant-design/icons';
+import { Layout, Calendar } from 'antd';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Outlet } from 'react-router-dom';
 import './index.css';
 import 'antd/dist/antd.css';
+import 'semantic-ui-css/semantic.min.css';
 
-import { useGetAllUsersQuery } from '../../features/users/userSlice';
-import { Usercard } from '../../features/users/userCard';
+// import { useGetAllUsersQuery } from '../../features/users/userSlice';
+// import { Usercard } from '../../features/users/userCard';
 import LogoutButton from '../../features/auth/logoutButton';
 import AvatarButton from '../../features/auth/avatarButton';
 import TodayList from '../../features/schedules/todayList';
@@ -26,78 +21,71 @@ const { Header, Content, Sider } = Layout;
 const HomePage = () => {
   const navigate = useNavigate();
   const loggedinUser = useSelector((state) => state.auth.loggedinUser);
-  // const [displayContent, setDisplayContent] = useState(undefined);
-  const {
-    data: users,
-    isLoading,
-    isSuccess,
-    isError,
-    error
-  } = useGetAllUsersQuery();
 
-  let displayContent;
-  if (isLoading) {
-    displayContent = <p>...is loading for the first time</p>;
-  } else if (isSuccess) {
-    // console.log(users);
-    displayContent = users.map((oneUser) => {
-      return (
-        <Usercard
-          key={oneUser.id}
-          title={oneUser.name}
-          description={oneUser.role}
-          avatar={oneUser.avatar}
-        />
-      );
-    });
-  } else if (isError) {
-    displayContent = <p>{JSON.stringify(error)}</p>;
-  }
-
-  // const users = useSelector(selectAllUsers);
-  // console.log(users);
-
-  const menuIconGenerator = (icon, text) => {
-    return (
-      <Tooltip placement="right" color="blue" title={text}>
-        {icon}
-      </Tooltip>
-    );
-  };
+  const [breadcrumb, setBreadcrumb] = useState(
+    loggedinUser
+      ? loggedinUser.role === 'student'
+        ? 'Schedule'
+        : 'Student'
+      : undefined
+  );
 
   let studentMenuItems = [
     {
-      key: 2,
-      icon: menuIconGenerator(<LaptopOutlined />, 'my menu item')
+      text: 'Projects',
+      key: 'Projects',
+      icon: 'archive'
     },
     {
-      key: 3,
-      icon: menuIconGenerator(<NotificationOutlined />, 'my menu item')
+      text: 'Sessions',
+      key: 'Sessions',
+      icon: 'comments outline'
     },
     {
-      key: 'schedules',
-      icon: menuIconGenerator(<CalendarOutlined />, 'Schedules')
+      text: 'Schedules',
+      key: 'Schedules',
+      icon: 'calendar alternate outline'
     }
   ];
 
   const supervisorMenuItems = [
     ...studentMenuItems,
     {
-      key: 'students',
-      icon: menuIconGenerator(<UserOutlined />, 'Students')
+      text: 'Students',
+      key: 'Students',
+      icon: 'address book outline'
     }
   ];
 
-  // console.log(studentMenuItems);
-  // console.log(supervisorMenuItems);
-
-  // debugger;
-
   let menuItems;
   if (loggedinUser) {
-    menuItems =
-      loggedinUser.role === 'student' ? studentMenuItems : supervisorMenuItems;
+    if (loggedinUser.role === 'student') {
+      menuItems = studentMenuItems;
+    } else {
+      menuItems = supervisorMenuItems;
+    }
   }
+
+  const menuIconGenerator = (itemList) => {
+    let returnItem = [];
+    if (itemList) {
+      itemList.forEach((e) => {
+        returnItem.push(
+          <a
+            className="item"
+            key={`${e.key}`}
+            name={`${e.text}`}
+            onClick={handleMenuClick}
+          >
+            <i className={`${e.icon} icon`} name={`${e.text}`}></i>
+            {e.text}
+          </a>
+        );
+      });
+    }
+
+    return returnItem;
+  };
 
   const dateCellRender = (value) => {
     if (value.date() === 21) {
@@ -106,98 +94,98 @@ const HomePage = () => {
     return;
   };
 
-  const handleMenuClick = ({ key }) => {
-    console.log(key);
-    if (key === 'schedules') {
-      // displayContent = <SchedulePage />;
-      navigate('/home/schedule');
+  const handleMenuClick = (e) => {
+    setBreadcrumb(e.target.getAttribute('name'));
+    const key = e.target.getAttribute('name');
+    switch (key) {
+      case 'Schedules':
+        navigate('/home/schedule');
+        break;
+      case 'Students':
+        navigate('/home/student');
+        break;
+      case 'Sessions':
+        navigate('/home/session');
+        break;
+      case 'Projects':
+        navigate('/home/project');
+        break;
+
+      default:
+        break;
     }
   };
 
   return (
-    <div className="app-container">
-      <Layout style={{ height: '80vh' }}>
-        <Sider width={60} className="site-layout-background">
-          <div className="icon-container">
-            <RadarChartOutlined style={{ fontSize: 35 }} />
-          </div>
-          <Menu
-            mode="inline"
+    <div
+      className="app-container"
+      style={{ display: 'flex', flexDirection: 'row' }}
+    >
+      <aside className="left-sider">
+        <div className="icon-container">
+          <RadarChartOutlined style={{ fontSize: 35 }} />
+        </div>
+        <div className="ui vertical labeled icon menu" id="icon-menu">
+          {menuIconGenerator(menuItems)}
+        </div>
+      </aside>
+      <Layout style={{ height: '100vh' }}>
+        <Header
+          style={{
+            backgroundColor: 'darkcyan',
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            height: '6vh'
+          }}
+        >
+          <AvatarButton />
+          <LogoutButton />
+        </Header>
+        <Layout style={{ display: 'flex', flexDirection: 'row' }}>
+          <Layout
             style={{
-              height: '100%',
-              width: 60
-            }}
-            items={menuItems}
-            onClick={handleMenuClick}
-          />
-        </Sider>
-        <Layout style={{ height: '100vh' }}>
-          <Header
-            className="header"
-            style={{
-              backgroundColor: 'darkcyan',
-              display: 'flex',
-              gap: '10px',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              height: '8vh'
+              padding: '0 24px 24px'
             }}
           >
-            <AvatarButton />
-            <LogoutButton />
-          </Header>
-          <Layout>
-            <Layout
+            <div className="ui massive breadcrumb" style={{ padding: '20px' }}>
+              <div className="active section">{breadcrumb}</div>
+              <i className="right chevron icon divider"></i>
+            </div>
+            <Content
+              className="site-layout-background"
               style={{
-                padding: '0 24px 24px'
+                padding: 24,
+                margin: 0,
+                minHeight: 280,
+                minWidth: 400
               }}
             >
-              <Breadcrumb
-                style={{
-                  margin: '16px 0'
-                }}
-              >
-                <Breadcrumb.Item>Home</Breadcrumb.Item>
-                <Breadcrumb.Item>List</Breadcrumb.Item>
-                <Breadcrumb.Item>App</Breadcrumb.Item>
-              </Breadcrumb>
-              <Content
-                className="site-layout-background"
-                style={{
-                  padding: 24,
-                  margin: 0,
-                  minHeight: 280,
-                  minWidth: 400
-                }}
-              >
-                {/* <Space wrap>{displayContent}</Space> */}
-                <Outlet />
-              </Content>
-            </Layout>
-
-            <Sider width={400} className="site-layout-background">
-              <Calendar
-                fullscreen={false}
-                dateCellRender={dateCellRender}
-                style={{
-                  width: 400,
-                  maxHeight: '45vh'
-                  // borderBottom: '1px solid black'
-                }}
-              />
-              <div
-                style={{
-                  height: '6vh',
-                  overflow: 'auto',
-                  display: 'flex',
-                  justifyContent: 'center'
-                }}
-              >
-                <h3>Today's tasks</h3>
-              </div>
-              <TodayList />
-            </Sider>
+              <Outlet />
+            </Content>
           </Layout>
+
+          <aside className="right-sider">
+            <Calendar
+              fullscreen={false}
+              dateCellRender={dateCellRender}
+              style={{
+                maxHeight: '25vh'
+              }}
+            />
+            <div
+              style={{
+                height: '5vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <h3>Today's tasks</h3>
+            </div>
+            <TodayList />
+          </aside>
         </Layout>
       </Layout>
     </div>

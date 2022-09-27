@@ -1,5 +1,11 @@
+import { Calendar } from 'antd';
+
 const SchedulePage = () => {
-  return <p>Schedule main page</p>;
+  return (
+    <div>
+      <Calendar />
+    </div>
+  );
 };
 
 export default SchedulePage;

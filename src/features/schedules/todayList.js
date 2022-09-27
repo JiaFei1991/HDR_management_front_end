@@ -1,3 +1,4 @@
+import { calculateNewValue } from '@testing-library/user-event/dist/utils';
 import { Avatar, Divider, List, Skeleton } from 'antd';
 import React, { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -32,7 +33,7 @@ const TodayList = () => {
     <div
       id="scrollableDiv"
       style={{
-        maxHeight: '42vh',
+        maxHeight: '64vh',
         overflow: 'auto',
         padding: '0 16px'
         // border: '1px solid rgba(140, 140, 140, 0.35)'

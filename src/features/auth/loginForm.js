@@ -16,7 +16,7 @@ const LoginForm = () => {
   // const loggedinUser = useSelector((state) => state.auth.loggedinUser);
 
   const onFinish = async (values) => {
-    console.log('Received values of form: ', values);
+    // console.log('Received values of form: ', values);
     try {
       // const response = await dispatch(login(values)).unwrap();
       // console.log(response);
@@ -24,8 +24,8 @@ const LoginForm = () => {
       const loggedinUser = response.user;
       if (loggedinUser) {
         loggedinUser.role === 'student'
-          ? navigate('/home')
-          : navigate('/home/schedule');
+          ? navigate('/home/schedule')
+          : navigate('/home/student');
       }
     } catch (err) {
       console.log(err);
