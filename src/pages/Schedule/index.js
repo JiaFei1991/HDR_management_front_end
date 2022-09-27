@@ -2,7 +2,7 @@ import { Calendar } from 'antd';
 
 const SchedulePage = () => {
   return (
-    <div>
+    <div id="calendar-component">
       <Calendar />
     </div>
   );

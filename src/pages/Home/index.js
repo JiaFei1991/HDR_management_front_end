@@ -1,6 +1,6 @@
 import { RadarChartOutlined } from '@ant-design/icons';
 import { Layout, Calendar } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Outlet } from 'react-router-dom';
 import './index.css';
@@ -12,13 +12,30 @@ import 'semantic-ui-css/semantic.min.css';
 import LogoutButton from '../../features/auth/logoutButton';
 import AvatarButton from '../../features/auth/avatarButton';
 import TodayList from '../../features/schedules/todayList';
+import { selectDate } from '../../features/schedules/scheduleSlice';
 
-import SchedulePage from '../Schedule';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-const { Header, Content, Sider } = Layout;
+const { Content } = Layout;
+
+function vh(percent) {
+  var h = Math.max(
+    document.documentElement.clientHeight,
+    window.innerHeight || 0
+  );
+  return (percent * h) / 100;
+}
+
+// function vw(percent) {
+//   var w = Math.max(
+//     document.documentElement.clientWidth,
+//     window.innerWidth || 0
+//   );
+//   return (percent * w) / 100;
+// }
 
 const HomePage = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const loggedinUser = useSelector((state) => state.auth.loggedinUser);
 
@@ -29,6 +46,26 @@ const HomePage = () => {
         : 'Student'
       : undefined
   );
+
+  useEffect(() => {
+    //calculate the height of right-sider-list
+    const calendarComponent = document.getElementById('right-sider-calendar');
+    const titleComponent = document.getElementById('right-sider-title');
+    const listComponent = document.getElementById('right-sider-list');
+
+    if (calendarComponent && titleComponent && listComponent) {
+      const listHeightInPx =
+        vh(100 - 8) -
+        calendarComponent.clientHeight -
+        titleComponent.clientHeight;
+      listComponent.style.maxHeight = `${listHeightInPx}px`;
+    }
+  }, []);
+
+  const onSelectDate = (moment) => {
+    const selectedDate = moment._d.toString().split(' ').slice(0, 4);
+    dispatch(selectDate(selectedDate));
+  };
 
   let studentMenuItems = [
     {
@@ -129,20 +166,24 @@ const HomePage = () => {
           {menuIconGenerator(menuItems)}
         </div>
       </aside>
-      <Layout style={{ height: '100vh' }}>
-        <Header
+      <section id="main-section" style={{ height: '100vh' }}>
+        <header
           style={{
             backgroundColor: 'darkcyan',
             display: 'flex',
+            flexDirection: 'row',
             gap: '10px',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            height: '6vh'
+            height: '8vh',
+            paddingRight: '2vw'
           }}
         >
+          <i className="large bell outline icon"></i>
+          <div className="vl" />
           <AvatarButton />
           <LogoutButton />
-        </Header>
+        </header>
         <Layout style={{ display: 'flex', flexDirection: 'row' }}>
           <Layout
             style={{
@@ -155,6 +196,7 @@ const HomePage = () => {
             </div>
             <Content
               className="site-layout-background"
+              id="outlet-page"
               style={{
                 padding: 24,
                 margin: 0,
@@ -167,14 +209,18 @@ const HomePage = () => {
           </Layout>
 
           <aside className="right-sider">
-            <Calendar
-              fullscreen={false}
-              dateCellRender={dateCellRender}
-              style={{
-                maxHeight: '25vh'
-              }}
-            />
+            <div id="right-sider-calendar">
+              <Calendar
+                fullscreen={false}
+                dateCellRender={dateCellRender}
+                onSelect={onSelectDate}
+                style={{
+                  maxHeight: '50vh'
+                }}
+              />
+            </div>
             <div
+              id="right-sider-title"
               style={{
                 height: '5vh',
                 display: 'flex',
@@ -187,7 +233,7 @@ const HomePage = () => {
             <TodayList />
           </aside>
         </Layout>
-      </Layout>
+      </section>
     </div>
   );
 };

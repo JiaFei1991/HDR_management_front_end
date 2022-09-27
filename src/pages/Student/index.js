@@ -1,5 +1,6 @@
 import { useGetAllUsersQuery } from '../../features/users/userSlice';
 import { Usercard } from '../../features/users/userCard';
+import { Space } from 'antd';
 
 const StudentPage = () => {
   const {
@@ -29,7 +30,7 @@ const StudentPage = () => {
     displayContent = <p>{JSON.stringify(error)}</p>;
   }
 
-  return <div>{displayContent}</div>;
+  return <Space wrap="true">{displayContent}</Space>;
 };
 
 export default StudentPage;
