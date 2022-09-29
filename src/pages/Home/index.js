@@ -3,12 +3,11 @@ import { Layout, Calendar } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Outlet } from 'react-router-dom';
-import './index.css';
+import { vh, vw } from '../../features/util/layoutCalc';
+import '../../style.css';
 import 'antd/dist/antd.css';
 import 'semantic-ui-css/semantic.min.css';
 
-// import { useGetAllUsersQuery } from '../../features/users/userSlice';
-// import { Usercard } from '../../features/users/userCard';
 import LogoutButton from '../../features/auth/logoutButton';
 import AvatarButton from '../../features/auth/avatarButton';
 import TodayList from '../../features/schedules/todayList';
@@ -18,27 +17,13 @@ import { useDispatch, useSelector } from 'react-redux';
 
 const { Content } = Layout;
 
-function vh(percent) {
-  var h = Math.max(
-    document.documentElement.clientHeight,
-    window.innerHeight || 0
-  );
-  return (percent * h) / 100;
-}
-
-// function vw(percent) {
-//   var w = Math.max(
-//     document.documentElement.clientWidth,
-//     window.innerWidth || 0
-//   );
-//   return (percent * w) / 100;
-// }
-
 const HomePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loggedinUser = useSelector((state) => state.auth.loggedinUser);
 
+  const [vhSize, setVhSize] = useState(vh(100));
+  const [vwSize, setVwSize] = useState(vw(100));
   const [breadcrumb, setBreadcrumb] = useState(
     loggedinUser
       ? loggedinUser.role === 'student'
@@ -46,6 +31,11 @@ const HomePage = () => {
         : 'Student'
       : undefined
   );
+
+  window.onresize = function () {
+    setVhSize(vh(100));
+    setVwSize(vw(100));
+  };
 
   useEffect(() => {
     //calculate the height of right-sider-list
@@ -60,7 +50,16 @@ const HomePage = () => {
         titleComponent.clientHeight;
       listComponent.style.maxHeight = `${listHeightInPx}px`;
     }
-  }, []);
+
+    //calculate the width of the main page
+    const menuComponent = document.getElementById('left-sider');
+    const mainPageComponent = document.getElementById('main-page');
+
+    if (menuComponent && mainPageComponent) {
+      const mainPageWidthInPx = vw(100 - 25) - menuComponent.clientWidth;
+      mainPageComponent.style.minWidth = `${mainPageWidthInPx}px`;
+    }
+  }, [vhSize, vwSize]);
 
   const onSelectDate = (moment) => {
     const selectedDate = moment._d.toString().split(' ').slice(0, 4);
@@ -147,18 +146,14 @@ const HomePage = () => {
       case 'Projects':
         navigate('/home/project');
         break;
-
       default:
         break;
     }
   };
 
   return (
-    <div
-      className="app-container"
-      style={{ display: 'flex', flexDirection: 'row' }}
-    >
-      <aside className="left-sider">
+    <div id="app-container" style={{ display: 'flex', flexDirection: 'row' }}>
+      <aside className="left-sider" id="left-sider">
         <div className="icon-container">
           <RadarChartOutlined style={{ fontSize: 35 }} />
         </div>
@@ -167,18 +162,7 @@ const HomePage = () => {
         </div>
       </aside>
       <section id="main-section" style={{ height: '100vh' }}>
-        <header
-          style={{
-            backgroundColor: 'darkcyan',
-            display: 'flex',
-            flexDirection: 'row',
-            gap: '10px',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            height: '8vh',
-            paddingRight: '2vw'
-          }}
-        >
+        <header id="main-header">
           <i className="large bell outline icon"></i>
           <div className="vl" />
           <AvatarButton />
@@ -186,22 +170,25 @@ const HomePage = () => {
         </header>
         <Layout style={{ display: 'flex', flexDirection: 'row' }}>
           <Layout
+            id="main-page"
             style={{
               padding: '0 24px 24px'
             }}
           >
-            <div className="ui massive breadcrumb" style={{ padding: '20px' }}>
+            <div
+              className="ui massive breadcrumb"
+              id="breadcrumb"
+              style={{ padding: '20px' }}
+            >
               <div className="active section">{breadcrumb}</div>
               <i className="right chevron icon divider"></i>
             </div>
             <Content
               className="site-layout-background"
-              id="outlet-page"
               style={{
                 padding: 24,
                 margin: 0,
-                minHeight: 280,
-                minWidth: 400
+                minHeight: 280
               }}
             >
               <Outlet />

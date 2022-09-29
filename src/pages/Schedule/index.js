@@ -1,11 +1,8 @@
 import { Calendar } from 'antd';
+import DayScheduler from '../../features/schedules/dayScheduler';
 
 const SchedulePage = () => {
-  return (
-    <div id="calendar-component">
-      <Calendar />
-    </div>
-  );
+  return <DayScheduler />;
 };
 
 export default SchedulePage;
