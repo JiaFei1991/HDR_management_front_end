@@ -1,3 +1,5 @@
+import { Tooltip } from 'antd';
+
 const HourCell = ({ hour, onRowClick }) => {
   return (
     <div id="hour-cell" key={hour} className="ui internally celled grid">
@@ -7,22 +9,26 @@ const HourCell = ({ hour, onRowClick }) => {
         </div>
         <div id="grid-column" className="thirteen wide column">
           <div className="ui internally celled grid">
-            <div
-              id="half-hour-row"
-              className="row"
-              name={`${hour.split(':')[0]}-first`}
-              onClick={onRowClick}
-            >
-              <p></p>
-            </div>
-            <div
-              id="half-hour-row"
-              className="row"
-              name={`${hour.split(':')[0]}-second`}
-              onClick={onRowClick}
-            >
-              <p></p>
-            </div>
+            <Tooltip title="Click to add an event">
+              <div
+                id="half-hour-row"
+                className="row"
+                name={`${hour.split(':')[0]}-first`}
+                onClick={onRowClick}
+              >
+                <p></p>
+              </div>
+            </Tooltip>
+            <Tooltip title="Click to add an event">
+              <div
+                id="half-hour-row"
+                className="row"
+                name={`${hour.split(':')[0]}-second`}
+                onClick={onRowClick}
+              >
+                <p></p>
+              </div>
+            </Tooltip>
           </div>
         </div>
       </div>

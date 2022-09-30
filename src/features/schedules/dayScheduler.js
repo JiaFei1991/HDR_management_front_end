@@ -1,27 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import '../../style.css';
 
-import HourCell from './hourCell';
+import DayCell from './dayCell';
 import { vh, vw } from '../util/layoutCalc';
-import { useSelector } from 'react-redux';
 
 const DayScheduler = () => {
-  const today = useSelector((state) => state.schedule.today);
   const [vhSize, setVhSize] = useState(vh(100));
   const [vwSize, setVwSize] = useState(vw(100));
+  const today = useSelector((state) => state.schedule.today);
 
   window.onresize = function () {
-    setVhSize(vh(100));
-    setVwSize(vw(100));
+    setVhSize(100);
+    setVwSize(100);
   };
 
   useEffect(() => {
     const mainPageComponent = document.getElementById('main-page');
     const breadcrumbComponent = document.getElementById('breadcrumb');
     const daySchedulerComponent = document.getElementById('day-scehduler');
-    const schedulerHeader = document.getElementById('schduler-header');
+    const schedulerHeader = document.getElementById('scheduler-header');
     const schedulerBody = document.getElementById('scheduler-body');
+
+    // const hourRow = document.getElementsByClassName('row');
+    // const events = document.getElementsByClassName('event');
+    // // debugger;
+    // if (hourRow.length !== 0 && events.length !== 0) {
+    //   events.style.maxWidth = hourRow.clientWidth;
+    // }
 
     if (
       breadcrumbComponent &&
@@ -45,30 +51,15 @@ const DayScheduler = () => {
     }
   }, [vhSize, vwSize]);
 
-  // generate hour cells
-  const onRowClick = (e) => {
-    const eventDiv = document.createElement('div');
-    eventDiv.classList.add('event');
-    eventDiv.innerText = 'my new event';
-    e.target.appendChild(eventDiv);
-
-    console.log(e.target.getAttribute('name'));
-  };
-  let cellStack = [];
-  for (let i = 0; i < 24; i++) {
-    cellStack.push(<HourCell hour={`${i}:00`} onRowClick={onRowClick} />);
-  }
-
   return (
     <section
       id="day-scehduler"
       style={{
         padding: 0,
         margin: 0
-        // overflow: 'auto'
       }}
     >
-      <header id="schduler-header">
+      <header id="scheduler-header">
         <div id="header-dropdown" className="ui compact menu">
           <div className="ui simple dropdown item">
             View
@@ -104,7 +95,7 @@ const DayScheduler = () => {
       </header>
 
       <div id="scheduler-body-container">
-        <div id="scheduler-body">{cellStack}</div>
+        <DayCell />
       </div>
     </section>
   );

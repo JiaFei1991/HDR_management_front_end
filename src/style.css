@@ -99,8 +99,8 @@
 } */
 
 /* the schduler component */
-#schduler-header {
-  height: 5vh;
+#scheduler-header {
+  height: 7vh;
   background-color: #497500;
   display: flex;
   flex-direction: row;
@@ -168,13 +168,17 @@
 }
 
 .event {
-  width: 400px;
+  /* width: 400px;
   height: 120px;
+  top: 20px; */
   background-color: red;
+  border-radius: 12px;
+  padding: 10px;
+  border: solid 5px gray;
+  border-left: solid 10px orange;
   color: #f0f2f5;
   z-index: 10;
   position: absolute;
-  top: 20px;
 }
 
 /* the end of schduler component */

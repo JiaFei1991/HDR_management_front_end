@@ -6,7 +6,8 @@ const initialState = {
     new Date().getDay().toString(),
     ...new Date().toJSON().slice(0, 10).split('-').reverse()
   ],
-  selectedDate: undefined
+  selectedDate: undefined,
+  initTime: undefined
 };
 
 const ScheduleSlice = createSlice({
@@ -51,9 +52,17 @@ const ScheduleSlice = createSlice({
         month,
         action.payload[3]
       ];
+    },
+    setInitTime: (state, action) => {
+      // const updatedAction = [];
+      // action.payload.forEach((ele) => {
+      //   updatedAction.push(ele._d);
+      // });
+      // state.initTime = updatedAction[0].toString();
+      state.initTime = action.payload;
     }
   }
 });
 
-export const { selectDate } = ScheduleSlice.actions;
+export const { selectDate, setInitTime } = ScheduleSlice.actions;
 export default ScheduleSlice.reducer;
