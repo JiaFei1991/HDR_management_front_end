@@ -139,6 +139,7 @@
   margin-right: 24px;
   border-radius: 25px;
   overflow: auto;
+  position: relative;
 }
 
 #hour-cell {
@@ -167,17 +168,80 @@
   padding: 0px;
 }
 
+#event-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 10px;
+}
+
+#time-input {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+#event-form-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+
 .event {
   /* width: 400px;
   height: 120px;
   top: 20px; */
-  background-color: red;
+  /* background-color: red; */
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  /* align-content: flex-start; */
+  /* gap: 10px; */
   border-radius: 12px;
-  padding: 10px;
+  /* padding: 10px; */
   border: solid 5px gray;
   border-left: solid 10px orange;
   color: #f0f2f5;
+  position: absolute;
+}
+
+.eventTitleContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  top: 0px;
+  right: 0px;
+}
+
+.eventTitle {
+  margin: 0px;
+}
+
+.eventDuration {
+  margin: 0px;
+}
+
+.alldayEvent {
+  width: 2vw;
+  height: 144vh;
+  top: 0px;
+  right: 0px;
+  padding: 10px;
   z-index: 10;
+  border: solid 5px gray;
+  border-radius: 12px;
+  color: #f0f2f5;
+  position: absolute;
+}
+
+/* h4 h5 {
+  margin: 0px !important;
+} */
+
+.verticalText {
+  writing-mode: vertical-rl;
   position: absolute;
 }
 

@@ -1,6 +1,7 @@
 import { RadarChartOutlined } from '@ant-design/icons';
 import { Layout, Calendar } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { Outlet } from 'react-router-dom';
 import { vh, vw } from '../../features/util/layoutCalc';
@@ -11,9 +12,7 @@ import 'semantic-ui-css/semantic.min.css';
 import LogoutButton from '../../features/auth/logoutButton';
 import AvatarButton from '../../features/auth/avatarButton';
 import TodayList from '../../features/schedules/todayList';
-import { selectDate } from '../../features/schedules/scheduleSlice';
-
-import { useDispatch, useSelector } from 'react-redux';
+import { selectDate, setDimmer } from '../../features/schedules/scheduleSlice';
 
 const { Content } = Layout;
 
@@ -62,6 +61,7 @@ const HomePage = () => {
   }, [vhSize, vwSize]);
 
   const onSelectDate = (moment) => {
+    dispatch(setDimmer(true));
     const selectedDate = moment._d.toString().split(' ').slice(0, 4);
     dispatch(selectDate(selectedDate));
   };

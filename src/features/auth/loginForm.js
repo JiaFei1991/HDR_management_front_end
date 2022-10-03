@@ -18,8 +18,6 @@ const LoginForm = () => {
   const onFinish = async (values) => {
     // console.log('Received values of form: ', values);
     try {
-      // const response = await dispatch(login(values)).unwrap();
-      // console.log(response);
       const response = await dispatch(login(values)).unwrap();
       const loggedinUser = response.user;
       if (loggedinUser) {

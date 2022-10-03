@@ -1,82 +1,196 @@
-import { Modal, Form, Button, Input, TimePicker, Checkbox } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Modal, Button, message } from 'antd';
+import TextField from '@mui/material/TextField';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
 
-const { TextArea } = Input;
+import { renderEventCard } from './renderEventCard';
+import {
+  addScheduleToDate,
+  createNewSchedule,
+  setModalPrefill,
+  setEventModalOpen
+} from './scheduleSlice';
 
-const NewEventModal = ({ open, setOpen, initTime }) => {
-  //   const initTime = useSelector((state) => state.schedule.initTime);
-  //   const initialValues = {}
-  //   const dispatch = useDispatch();
-  // const [confirmLoading, setConfirmLoading] = useState(false);
-  //   useEffect(() => {
-  //     const input = document.getElementById('event-title-input');
-  //     if (input) {
-  //       input.value = '';
-  //     }
-  //   }, [open]);
-  const [form] = Form.useForm();
-  //   const [initTime, setInitTime] = useState([]);
+const NewEventModal = ({ initTime }) => {
+  const [startTime, setStartTime] = useState('00:00');
+  const [endTime, setEndTime] = useState('00:00');
+  const [repeat, setRepeat] = useState('None');
+  const [title, setTitle] = useState('My new event');
+  const [description, setDescription] = useState('Event description');
+  const [checked, setChecked] = useState(false);
+
+  const [timeDisabled, setTimeDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+
+  const dispatch = useDispatch();
+  const selectedDate = useSelector((state) => state.schedule.selectedDate);
+  const currentUser = useSelector((state) => state.auth.loggedinUser);
+  const open = useSelector((state) => state.schedule.eventModalOpen);
+  const prefillObj = useSelector((state) => state.schedule.modalPrefill);
+
+  useEffect(() => {
+    if (Object.keys(prefillObj).length !== 0) {
+      setStartTime(prefillObj.prefilledStartTime);
+      setEndTime(prefillObj.prefilledEndTime);
+      setRepeat(prefillObj.prefilledRepeat);
+      setTitle(prefillObj.prefilledTitle);
+      setDescription(prefillObj.prefilledDescription);
+      setChecked(prefillObj.prefilledChecked);
+    }
+  }, [prefillObj]);
+
+  useEffect(() => {
+    setStartTime(initTime[0]);
+    setEndTime(initTime[1]);
+  }, [initTime]);
+
+  const loadingAndDisable = (value) => {
+    setLoading(value);
+    setDisabled(value);
+    setTimeDisabled(value);
+  };
 
   // handle form submission and create new event
-  const handleSubmit = (values) => {
-    form.resetFields();
-    console.log(values);
-    // const eventName = e.target.getAttribute('name');
-    // const eventDiv = document.createElement('div');
-    // eventDiv.classList.add('event');
-    // eventDiv.id = `event-${eventName}`;
-    // eventDiv.innerText = 'my new event';
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    loadingAndDisable(true);
 
-    // e.target.appendChild(eventDiv);
+    // if prefill doesnt exist, submit form to create new event
+    if (Object.keys(prefillObj).length === 0) {
+      const [startHour, startMin] = startTime.split(':');
+      const [endHour, endMin] = endTime.split(':');
+      const start = new Date();
+      start.setHours(startHour, startMin, 0);
+      const end = new Date();
+      end.setHours(endHour, endMin, 0);
+
+      if (start >= end) {
+        message.error(
+          'Start time of the event cannot be equal to or later than the end time.',
+          4
+        );
+        return;
+      }
+      const eventLengthInMin = (end - start) / (1000 * 60);
+      if (eventLengthInMin < 30) {
+        message.error('An event can be no shorter than 30 minutes.', 4);
+        return;
+      }
+
+      if (title.length > 35) {
+        message.error('A title cannot exceeds 35 letters.', 4);
+        return;
+      }
+
+      const newFormData = {
+        title,
+        startTime,
+        endTime,
+        repeat,
+        description,
+        allday: checked
+      };
+
+      const res = await dispatch(
+        createNewSchedule({
+          title: newFormData.title,
+          description: newFormData.description,
+          repeat: newFormData.repeat,
+          allday: newFormData.allday,
+          userID: currentUser._id,
+          eventDate: `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`,
+          eventLengthInMin: eventLengthInMin,
+          startTime: new Date(
+            selectedDate[3],
+            selectedDate[2] - 1,
+            selectedDate[1],
+            ...newFormData.startTime.split(':')
+          ),
+          endTime: new Date(
+            selectedDate[3],
+            selectedDate[2] - 1,
+            selectedDate[1],
+            ...newFormData.endTime.split(':')
+          )
+        })
+      ).unwrap();
+
+      if (res.data.schedules) {
+        const newSchedule = res.data.schedules;
+        dispatch(
+          addScheduleToDate({
+            date: `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`,
+            id: newSchedule._id,
+            schedule: newSchedule
+          })
+        );
+        dispatch(setEventModalOpen(false));
+        loadingAndDisable(false);
+        resetForm();
+        renderEventCard({
+          ...newFormData,
+          eventLengthInMin,
+          scheduleId: newSchedule._id
+        });
+      }
+    } else {
+      // otherwise, update the existing event
+      console.log('patch update the event');
+      loadingAndDisable(false);
+      dispatch(setEventModalOpen(false));
+      resetForm();
+    }
+
+    // clear the prefill content
+    dispatch(setModalPrefill({}));
   };
 
   // handle cancelling form
   const handleCancel = () => {
-    form.resetFields();
-    // setInitTime(undefined);
-    setOpen(false);
+    dispatch(setEventModalOpen(false));
+    resetForm();
+
+    // clear the prefill content
+    dispatch(setModalPrefill({}));
   };
 
-  //   useEffect(() => {
-  //     if (eventName) {
-  //       const mStart = moment();
-  //       const mEnd = moment();
-  //       // const eventName = e.target.getAttribute('name');
-  //       const [hour, min] = eventName.split('-');
-  //       const startMin = min === 'first' ? '0' : '30';
-  //       let endHour, endMin;
-  //       if (startMin === '0') {
-  //         endHour = hour;
-  //         endMin = 30;
-  //       } else {
-  //         endHour = Number(hour) + 1;
-  //         endMin = 0;
-  //       }
-  //       const prefillTime = [
-  //         mStart.set({
-  //           hour: Number(hour),
-  //           minute: Number(startMin),
-  //           second: 0,
-  //           millisecond: 0
-  //         }),
-  //         mEnd.set({ hour: endHour, minute: endMin, second: 0, millisecond: 0 })
-  //       ];
-  //       setInitTime(prefillTime);
-  //     }
-  //   }, [eventName]);
+  const resetForm = () => {
+    setChecked(false);
+    setRepeat('None');
+    setTitle('My new event');
+    setDescription('Event description');
+  };
 
-  //   useEffect(() => {
-  //     setValue((value) => value + 1);
-  //   }, [initTime]);
+  const onStartTimeChange = (e) => {
+    setStartTime(e.target.value);
+  };
+  const onEndTimeChange = (e) => {
+    setEndTime(e.target.value);
+  };
 
-  const formRules = (fieldName) => [
-    {
-      required: true,
-      message: `Please enter your ${fieldName}!`
-    }
-  ];
+  const onTitleChange = (event) => {
+    setTitle(event.target.value);
+  };
+
+  const onDescriptionChange = (event) => {
+    setDescription(event.target.value);
+  };
+
+  const onCheckboxChange = (event) => {
+    setChecked(event.target.checked);
+    event.target.checked ? setTimeDisabled(true) : setTimeDisabled(false);
+  };
+
+  const onRepeatChange = (event) => {
+    setRepeat(event.target.value);
+  };
 
   return (
     <>
@@ -88,76 +202,120 @@ const NewEventModal = ({ open, setOpen, initTime }) => {
         maskClosable={false}
         onCancel={handleCancel}
       >
-        <input value={initTime}></input>
-        <div class="ui input">
-          <input type="text" placeholder="Search..." value={initTime} />
-        </div>
-        {/* <Form
-            form={form}
-            labelCol={{
-              span: 4
-            }}
-            wrapperCol={{
-              span: 14
-            }}
-            layout="horizontal"
-            //   disabled={formDisable}
-            onFinish={handleSubmit}
-            // initialValues={initialValues}
-          >
-            <Form.Item label="Title" name="title" rules={formRules('title')}>
-              <Input id="event-title-input" allowClear={true} />
-            </Form.Item>
-
-            <Form.Item
-              label="Location"
-              name="location"
-              rules={formRules('location')}
-            >
-              <Input id="event-location-input" allowClear={true} />
-            </Form.Item>
-
-            <Form.Item label="Time" name="time" rules={formRules('time')}>
-              <TimePicker.RangePicker
-                allowClear={true}
-                // defaultValue={initTime}
+        <form onSubmit={handleSubmit}>
+          <div id="event-form-container">
+            <TextField
+              required
+              id="event-form-title"
+              name="title"
+              label="Title"
+              value={title}
+              onChange={onTitleChange}
+              disabled={disabled}
+            />
+            <div id="time-input">
+              <TextField
+                required
+                id="event-form-startTime"
+                label="Start time"
+                name="startTime"
+                type="time"
+                value={startTime}
+                disabled={timeDisabled}
+                onChange={onStartTimeChange}
+                InputLabelProps={{
+                  shrink: true
+                }}
+                inputProps={{
+                  step: 300 // 5 min
+                }}
+                sx={{ width: 150 }}
               />
-            </Form.Item>
 
-            <Form.Item label="Description" name="description">
-              <TextArea
-                rows={4}
-                placeholder="maxLength is 400"
-                maxLength={400}
-                allowClear={true}
-                defaultValue={initTime}
+              <TextField
+                required
+                id="event-form-endTime"
+                label="End time"
+                name="endTime"
+                type="time"
+                value={endTime}
+                disabled={timeDisabled}
+                onChange={onEndTimeChange}
+                InputLabelProps={{
+                  shrink: true
+                }}
+                inputProps={{
+                  step: 300 // 5 min
+                }}
+                sx={{ width: 150 }}
               />
-            </Form.Item>
-
-            <Form.Item name="allday">
-              <Checkbox>All day</Checkbox>
-            </Form.Item>
-
-            <div
-              className="ant-modal-footer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end'
-              }}
-            >
-              <Button onClick={handleCancel}>Cancel</Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                name="submit-button"
-                //   disabled={submitDisabled}
-                //   loading={spin}
-              >
-                Create event
-              </Button>
             </div>
-          </Form> */}
+
+            <TextField
+              id="event-form-description"
+              label="Description"
+              name="description"
+              value={description}
+              multiline
+              rows={4}
+              onChange={onDescriptionChange}
+              disabled={disabled}
+            />
+
+            <div id="event-form-checkbox">
+              <FormControl>
+                <InputLabel>Repeat</InputLabel>
+                <Select
+                  id="event-form-repeat-select"
+                  value={repeat}
+                  label="Repeat"
+                  onChange={onRepeatChange}
+                  disabled={disabled}
+                >
+                  <MenuItem value={'None'}>None</MenuItem>
+                  <MenuItem value={'Daily'}>Daily</MenuItem>
+                  <MenuItem value={'Weekly'}>Weekly</MenuItem>
+                  <MenuItem value={'Monthly'}>Monthly</MenuItem>
+                  <MenuItem value={'Yearly'}>Yearly</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    value={checked}
+                    onChange={onCheckboxChange}
+                    disabled={disabled}
+                    name="AlldayCheckbox"
+                  />
+                }
+                label="All day"
+              />
+            </div>
+          </div>
+
+          <div
+            className="ant-modal-footer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end'
+            }}
+          >
+            <Button onClick={handleCancel} disabled={disabled}>
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              name="submit-button"
+              disabled={disabled}
+              loading={loading}
+            >
+              Create Event
+            </Button>
+          </div>
+        </form>
       </Modal>
     </>
   );

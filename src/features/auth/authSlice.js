@@ -1,6 +1,5 @@
-// import { createEntityAdapter, createSelector } from '@reduxjs/toolkit';
-// import { apiSlice } from '../api/apiSlice';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { PURGE } from 'redux-persist';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -31,10 +30,9 @@ export const logout = createAsyncThunk(
     const token = getState().auth.token;
     const refreshToken = getState().auth.refreshToken;
     if (!token || !refreshToken) {
+      // just a reminder, program will continue to log user out
       console.log('token missing in logout process.');
-      return;
     }
-    // debugger;
     const response = await axios({
       method: 'get',
       url: 'http://localhost:8000/HDRapi/v1/users/logout',
@@ -100,6 +98,9 @@ const authSlice = createSlice({
           refreshToken: Cookies.get('jwtRefresh')
         };
         return returnObj;
+      })
+      .addCase(PURGE, (state, action) => {
+        return initialState;
       });
     // .addCase(resetPassword.rejected, (state, action) => {
     //   console.log(action.payload);
@@ -114,31 +115,3 @@ export const selectRefreshToken = (state) => state.refreshToken;
 
 export const { openForgotPassModal } = authSlice.actions;
 export default authSlice.reducer;
-
-// const userAdapter = createEntityAdapter();
-
-// const initialUsersState = userAdapter.getInitialState();
-
-// export const authApiSlice = apiSlice.injectEndpoints({
-//   endpoints: (builder) => ({
-//     login: builder.mutation({
-//       query: (loginDetails) => ({
-//         url: '/users/login',
-//         method: 'POST',
-//         body: {
-//           email: loginDetails.userEmail,
-//           password: loginDetails.userPassword
-//         }
-//       }),
-//       transformResponse: (responseData) => {
-//         // const [cookies, setCookie, removeCookie] = useCookies(['cookie-name']);
-
-//         // return userAdapter.setAll(initialUsersState, responseData.data.users);
-//         return responseData;
-//       },
-//       providesTags: ['Auth']
-//     })
-//   })
-// });
-
-// export const { useLoginMutation } = authApiSlice;

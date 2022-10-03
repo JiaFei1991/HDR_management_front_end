@@ -1,17 +1,37 @@
-import {
-  createEntityAdapter,
-  createSelector,
-  createSlice,
-  createAsyncThunk
-} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiInstance } from '../api/apiSlice';
+import { PURGE } from 'redux-persist';
 import axios from 'axios';
-import { apiSlice } from '../api/apiSlice';
 
 const initialState = {
   registerModalOpen: false,
   supervisorsName: undefined,
-  studentsName: undefined
+  studentsName: undefined,
+  allUsers: undefined
 };
+
+export const getAllUsers = createAsyncThunk(
+  'user/getAllUsers',
+  async (arg, { getState }) => {
+    const token = getState().auth.token;
+    const refreshToken = getState().auth.refreshToken;
+    if (!token || !refreshToken) {
+      console.log('token missing in getAllUsers, request aborted.');
+      return;
+    }
+
+    const res = await apiInstance({
+      url: '/users',
+      method: 'get',
+      headers: {
+        authorization: `Bearer ${token}`,
+        refreshtoken: `Bearer ${refreshToken}`
+      }
+    });
+
+    return res.data.data;
+  }
+);
 
 export const getAllSupervisorsName = createAsyncThunk(
   'user/getAllSupervisorsName',
@@ -76,51 +96,15 @@ const userSlice = createSlice({
       })
       .addCase(createNewUser.fulfilled, (state, action) => {
         // state.currentLoginUser = action.payload.data;
+      })
+      .addCase(getAllUsers.fulfilled, (state, action) => {
+        state.allUsers = action.payload.users;
+      })
+      .addCase(PURGE, (state, action) => {
+        return initialState;
       });
   }
 });
 
 export const { openModal } = userSlice.actions;
 export default userSlice.reducer;
-
-// const userAdapter = createEntityAdapter();
-
-// const initialUsersState = userAdapter.getInitialState();
-
-export const userApiSlice = apiSlice.injectEndpoints({
-  endpoints: (builder) => ({
-    getAllUsers: builder.query({
-      query: () => '/users',
-      transformResponse: (responseData) => {
-        // return userAdapter.setAll(initialUsersState, responseData.data.users);
-        return responseData.data.users;
-      },
-      providesTags: ['Users']
-      // providesTags: (result, error, arg) => [
-      //   { type: "Post", id: "LIST" },
-      //   ...result.ids.map((id) => ({ type: "Post", id })),
-      // ],
-    })
-  })
-});
-
-// // returns the query result object
-// export const selectUsersResult = userApiSlice.endpoints.getAllUsers.select();
-
-// // Creates memoized selector
-// const selectUsersData = createSelector(
-//   selectUsersResult,
-//   (res) => res.data // normalized state object with ids & entities
-// );
-
-// //getSelectors creates these selectors and we rename them with aliases using destructuring
-// export const {
-//   selectAll: selectAllUsers,
-//   selectById: selectUserById,
-//   selectIds: selectUserIds,
-//   // Pass in a selector that returns the posts slice of state
-// } = userAdapter.getSelectors(
-//   (state) => selectUsersData(state) ?? initialUsersState
-// );
-
-export const { useGetAllUsersQuery } = userApiSlice;

@@ -1,14 +1,97 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { apiInstance } from '../api/apiSlice';
+import { PURGE } from 'redux-persist';
 
 const initialState = {
   today: [
     new Date().getDay().toString(),
     ...new Date().toJSON().slice(0, 10).split('-').reverse()
   ],
-  selectedDate: undefined,
-  initTime: undefined
+  selectedDate: [
+    new Date().getDay().toString(),
+    ...new Date().toJSON().slice(0, 10).split('-').reverse()
+  ],
+  scheduleMonth: {},
+  dimmer: '',
+  eventModalOpen: false,
+  actionModalOpen: false,
+  selectedEventId: undefined,
+  modalPrefill: {}
 };
+
+export const createNewSchedule = createAsyncThunk(
+  'schedule/createNewSchedule',
+  async (data, { getState }) => {
+    const token = getState().auth.token;
+    const refreshToken = getState().auth.refreshToken;
+    if (!token || !refreshToken) {
+      console.log('token missing in getAllUsers, request aborted.');
+      return;
+    }
+    const res = await apiInstance({
+      url: '/schedules',
+      method: 'post',
+      data: data,
+      headers: {
+        authorization: `Bearer ${token}`,
+        refreshtoken: `Bearer ${refreshToken}`
+      }
+    });
+    return res.data;
+  }
+);
+
+export const getCurrentDaySchedules = createAsyncThunk(
+  'schedule/getCurrentDaySchedules',
+  async (date, { getState }) => {
+    const state = getState();
+    const token = state.auth.token;
+    const refreshToken = state.auth.refreshToken;
+    if (!token || !refreshToken) {
+      console.log('token missing in getAllUsers, request aborted.');
+      return;
+    }
+    const currentUserId = state.auth.loggedinUser._id;
+    if (!currentUserId) {
+      console.log(
+        'current user id missing in getCurrentDaySchedules, request aborted.'
+      );
+      return;
+    }
+    const res = await apiInstance({
+      url: `/users/${currentUserId}/schedules/${date}`,
+      method: 'get',
+      headers: {
+        authorization: `Bearer ${token}`,
+        refreshtoken: `Bearer ${refreshToken}`
+      }
+    });
+    return res.data;
+  }
+);
+
+export const deleteOneSchedule = createAsyncThunk(
+  'schedule/deleteOneSchedule',
+  async (scheduleId, { getState }) => {
+    const state = getState();
+    const token = state.auth.token;
+    const refreshToken = state.auth.refreshToken;
+    if (!token || !refreshToken) {
+      console.log('token missing in deleteOneSchedule, request aborted.');
+      return;
+    }
+    const res = await apiInstance({
+      url: `/schedules/${scheduleId}`,
+      method: 'delete',
+      headers: {
+        authorization: `Bearer ${token}`,
+        refreshtoken: `Bearer ${refreshToken}`
+      }
+    });
+
+    return res.data;
+  }
+);
 
 const ScheduleSlice = createSlice({
   name: 'schedule',
@@ -53,16 +136,62 @@ const ScheduleSlice = createSlice({
         action.payload[3]
       ];
     },
-    setInitTime: (state, action) => {
-      // const updatedAction = [];
-      // action.payload.forEach((ele) => {
-      //   updatedAction.push(ele._d);
-      // });
-      // state.initTime = updatedAction[0].toString();
-      state.initTime = action.payload;
+    addScheduleToDate: (state, action) => {
+      // TODO: time zone conversion needs to be done
+      if (!state.scheduleMonth[action.payload.date]) {
+        state.scheduleMonth[action.payload.date] = {};
+      }
+      state.scheduleMonth[action.payload.date][action.payload.id] =
+        action.payload.schedule;
+    },
+    setDimmer: (state, action) => {
+      if (action.payload === true) {
+        state.dimmer = 'active';
+      } else {
+        state.dimmer = '';
+      }
+    },
+    setEventModalOpen: (state, action) => {
+      state.eventModalOpen = action.payload;
+    },
+    setActionModalOpen: (state, action) => {
+      state.actionModalOpen = action.payload;
+    },
+    setSelectedEventId: (state, action) => {
+      state.selectedEventId = action.payload;
+    },
+    setModalPrefill: (state, action) => {
+      state.modalPrefill = action.payload;
     }
+  },
+  extraReducers(builder) {
+    builder
+      .addCase(PURGE, (state, action) => {
+        return initialState;
+      })
+      .addCase(getCurrentDaySchedules.fulfilled, (state, action) => {
+        if (action.payload && action.payload.data.data.length !== 0) {
+          const eventArray = action.payload.data.data;
+          const date = eventArray[0].eventDate;
+
+          // clear the current state scheduleMonth before assigning the new ones
+          state.scheduleMonth[date] = {};
+
+          eventArray.forEach((event) => {
+            state.scheduleMonth[date][event._id] = event;
+          });
+        }
+      });
   }
 });
 
-export const { selectDate, setInitTime } = ScheduleSlice.actions;
+export const {
+  selectDate,
+  addScheduleToDate,
+  setDimmer,
+  setEventModalOpen,
+  setActionModalOpen,
+  setSelectedEventId,
+  setModalPrefill
+} = ScheduleSlice.actions;
 export default ScheduleSlice.reducer;

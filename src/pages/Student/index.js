@@ -1,21 +1,22 @@
-import { useGetAllUsersQuery } from '../../features/users/userSlice';
+import { getAllUsers } from '../../features/users/userSlice';
 import { Usercard } from '../../features/users/userCard';
 import { Space } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 const StudentPage = () => {
-  const {
-    data: users,
-    isLoading,
-    isSuccess,
-    isError,
-    error
-  } = useGetAllUsersQuery();
+  const dispatch = useDispatch();
+  const users = useSelector((state) => state.user.allUsers);
+
+  useEffect(() => {
+    async function loadStudents() {
+      await dispatch(getAllUsers());
+    }
+    loadStudents();
+  }, [dispatch]);
 
   let displayContent;
-  if (isLoading) {
-    displayContent = <p>...is loading for the first time</p>;
-  } else if (isSuccess) {
-    // console.log(users);
+  if (users) {
     displayContent = users.map((oneUser) => {
       return (
         <Usercard
@@ -26,8 +27,6 @@ const StudentPage = () => {
         />
       );
     });
-  } else if (isError) {
-    displayContent = <p>{JSON.stringify(error)}</p>;
   }
 
   return <Space wrap="true">{displayContent}</Space>;

@@ -8,7 +8,7 @@ import { vh, vw } from '../util/layoutCalc';
 const DayScheduler = () => {
   const [vhSize, setVhSize] = useState(vh(100));
   const [vwSize, setVwSize] = useState(vw(100));
-  const today = useSelector((state) => state.schedule.today);
+  const today = useSelector((state) => state.schedule.selectedDate);
 
   window.onresize = function () {
     setVhSize(100);
@@ -24,7 +24,7 @@ const DayScheduler = () => {
 
     // const hourRow = document.getElementsByClassName('row');
     // const events = document.getElementsByClassName('event');
-    // // debugger;
+
     // if (hourRow.length !== 0 && events.length !== 0) {
     //   events.style.maxWidth = hourRow.clientWidth;
     // }

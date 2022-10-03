@@ -1,4 +1,4 @@
-import { Tooltip } from 'antd';
+import Tooltip from '@mui/material/Tooltip';
 
 const HourCell = ({ hour, onRowClick }) => {
   return (

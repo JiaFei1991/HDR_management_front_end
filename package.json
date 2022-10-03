@@ -4,6 +4,10 @@
   "private": true,
   "proxy": "http://localhost:8000",
   "dependencies": {
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@mui/material": "^5.10.7",
+    "@mui/styled-engine-sc": "^5.10.6",
     "@reduxjs/toolkit": "^1.8.5",
     "@semantic-ui-react/css-patch": "^1.1.2",
     "@testing-library/jest-dom": "^5.16.5",
@@ -13,7 +17,6 @@
     "axios": "^0.27.2",
     "dotenv": "^16.0.2",
     "js-cookie": "^3.0.1",
-    "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-infinite-scroll-component": "^6.1.0",
@@ -22,8 +25,10 @@
     "react-router-dom": "^6.4.0",
     "react-scripts": "5.0.1",
     "redux": "^4.2.0",
+    "redux-persist": "^6.0.0",
     "redux-thunk": "^2.4.1",
     "semantic-ui-css": "^2.4.1",
+    "styled-components": "^5.3.6",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

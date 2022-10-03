@@ -1,77 +1,52 @@
-import HourCell from './hourCell';
-import '../../style.css';
-import NewEventModal from './newEventModal';
 import { useEffect, useState } from 'react';
-import moment from 'moment';
-import { setInitTime } from './scheduleSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import '../../style.css';
+
+import HourCell from './hourCell';
+import NewEventModal from './newEventModal';
+import { ActionModal } from './ActionModal';
+import { populateDay } from './populateDay';
+import { setEventModalOpen } from './scheduleSlice';
 
 const DayCell = () => {
-  const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
+  const [initTime, setInitTime] = useState(['00:00', '00:00']);
 
-  const [initTime, setmyInitTime] = useState([]);
-  //   const [event, setEvent] = useState();
+  const dimmer = useSelector((state) => state.schedule.dimmer);
+  const selectedDate = useSelector((state) => state.schedule.selectedDate);
 
-  //   // handle form submission and create new event
-  //   const handleSubmit = ({ values, form }) => {
-  //     console.log(values);
-  //     form.resetFields();
-  //     // const eventName = e.target.getAttribute('name');
-  //     // const eventDiv = document.createElement('div');
-  //     // eventDiv.classList.add('event');
-  //     // eventDiv.id = `event-${eventName}`;
-  //     // eventDiv.innerText = 'my new event';
-
-  //     // e.target.appendChild(eventDiv);
-  //   };
-
-  //   // handle cancelling form
-  //   const handleCancel = (form) => {
-  //     form.resetFields();
-  //     setInitTime(undefined);
-  //     setOpen(false);
-  //   };
+  useEffect(() => {
+    populateDay(selectedDate);
+  }, [selectedDate, dispatch]);
 
   // handle row click
   const onRowClick = (e) => {
-    setOpen(true);
-    // setEvent(e.target.getAttribute('name'));
-    // debugger;
-    const mStart = moment();
-    const mEnd = moment();
-    const eventName = e.target.getAttribute('name');
-    const [hour, min] = eventName.split('-');
-    const startMin = min === 'first' ? '0' : '30';
-    let endHour, endMin;
-    if (startMin === '0') {
-      endHour = hour;
-      endMin = 30;
-    } else {
-      endHour = Number(hour) + 1;
-      endMin = 0;
-    }
-    // const prefillTime = [
-    //   mStart.set({
-    //     hour: Number(hour),
-    //     minute: Number(startMin),
-    //     second: 0,
-    //     millisecond: 0
-    //   }),
-    //   mEnd.set({ hour: endHour, minute: endMin, second: 0, millisecond: 0 })
-    // ];
-    const prefillTime = `${hour}:${startMin}`;
-    setmyInitTime(prefillTime);
-    // dispatch(setInitTime(prefillTime));
-    // setmyInitTime(prefillTime);
-    // debugger;
-    console.log(e.target.getAttribute('name'));
-  };
+    dispatch(setEventModalOpen(true));
 
-  //   useEffect(() => {
-  //     console.log(initTime);
-  //     dispatch(setInitTime(initTime));
-  //   }, [initTime]);
+    const eventName = e.target.getAttribute('name');
+    let [hour, min] = eventName.split('-');
+    const startMin = min === 'first' ? '00' : '30';
+
+    let endHour, endMin;
+    if (startMin === '00') {
+      endHour = hour;
+      endMin = '30';
+    } else {
+      endHour = (Number(hour) + 1).toString();
+      endMin = '00';
+    }
+
+    if (hour.length < 2) {
+      hour = `0${hour}`;
+    }
+    if (endHour.length < 2) {
+      endHour = `0${endHour}`;
+    }
+
+    const prefillTime = [`${hour}:${startMin}`, `${endHour}:${endMin}`];
+
+    setInitTime(prefillTime);
+  };
 
   // generate hour cells
   let cellStack = [];
@@ -84,14 +59,14 @@ const DayCell = () => {
   return (
     <div id="scheduler-body">
       {cellStack}
-      <NewEventModal
-        open={open}
-        setOpen={setOpen}
-        initTime={initTime}
-        // eventName={event}
-        // handleSubmit={handleSubmit}
-        // handleCancel={handleCancel}
-      />
+      <div
+        className={`ui ${dimmer} inverted dimmer`}
+        style={{ position: 'absolute' }}
+      >
+        <div className="ui text loader">Loading</div>
+      </div>
+      <NewEventModal initTime={initTime} />
+      <ActionModal />
     </div>
   );
 };
