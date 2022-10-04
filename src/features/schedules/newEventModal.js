@@ -10,11 +10,15 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 
 import { renderEventCard } from './renderEventCard';
+import { populateDay } from './populateDay';
 import {
   addScheduleToDate,
   createNewSchedule,
   setModalPrefill,
-  setEventModalOpen
+  setEventModalOpen,
+  updateScheduleById,
+  setSelectedEventId,
+  setDimmer
 } from './scheduleSlice';
 
 const NewEventModal = ({ initTime }) => {
@@ -28,12 +32,16 @@ const NewEventModal = ({ initTime }) => {
   const [timeDisabled, setTimeDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [confirmButton, setConfirmButton] = useState('Create event');
 
   const dispatch = useDispatch();
   const selectedDate = useSelector((state) => state.schedule.selectedDate);
   const currentUser = useSelector((state) => state.auth.loggedinUser);
   const open = useSelector((state) => state.schedule.eventModalOpen);
   const prefillObj = useSelector((state) => state.schedule.modalPrefill);
+  const selectedEventId = useSelector(
+    (state) => state.schedule.selectedEventId
+  );
 
   useEffect(() => {
     if (Object.keys(prefillObj).length !== 0) {
@@ -43,6 +51,10 @@ const NewEventModal = ({ initTime }) => {
       setTitle(prefillObj.prefilledTitle);
       setDescription(prefillObj.prefilledDescription);
       setChecked(prefillObj.prefilledChecked);
+
+      setConfirmButton('Update event');
+    } else {
+      setConfirmButton('Create event');
     }
   }, [prefillObj]);
 
@@ -62,33 +74,54 @@ const NewEventModal = ({ initTime }) => {
     e.preventDefault();
     loadingAndDisable(true);
 
+    const [startHour, startMin] = startTime.split(':');
+    const [endHour, endMin] = endTime.split(':');
+    const start = new Date();
+    start.setHours(startHour, startMin, 0);
+    const end = new Date();
+    end.setHours(endHour, endMin, 0);
+
+    if (start >= end) {
+      message.error(
+        'Start time of the event cannot be equal to or later than the end time.',
+        4
+      );
+      return;
+    }
+    const eventLengthInMin = (end - start) / (1000 * 60);
+    if (eventLengthInMin < 30) {
+      message.error('An event can be no shorter than 30 minutes.', 4);
+      return;
+    }
+    if (title.length > 35) {
+      message.error('A title cannot exceeds 35 letters.', 4);
+      return;
+    }
+
+    const currentLocalStates = {
+      title,
+      description,
+      repeat,
+      allday: checked,
+      userID: currentUser._id,
+      eventDate: `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`,
+      eventLengthInMin,
+      startTime: new Date(
+        selectedDate[3],
+        selectedDate[2] - 1,
+        selectedDate[1],
+        ...startTime.split(':')
+      ),
+      endTime: new Date(
+        selectedDate[3],
+        selectedDate[2] - 1,
+        selectedDate[1],
+        ...endTime.split(':')
+      )
+    };
+
     // if prefill doesnt exist, submit form to create new event
     if (Object.keys(prefillObj).length === 0) {
-      const [startHour, startMin] = startTime.split(':');
-      const [endHour, endMin] = endTime.split(':');
-      const start = new Date();
-      start.setHours(startHour, startMin, 0);
-      const end = new Date();
-      end.setHours(endHour, endMin, 0);
-
-      if (start >= end) {
-        message.error(
-          'Start time of the event cannot be equal to or later than the end time.',
-          4
-        );
-        return;
-      }
-      const eventLengthInMin = (end - start) / (1000 * 60);
-      if (eventLengthInMin < 30) {
-        message.error('An event can be no shorter than 30 minutes.', 4);
-        return;
-      }
-
-      if (title.length > 35) {
-        message.error('A title cannot exceeds 35 letters.', 4);
-        return;
-      }
-
       const newFormData = {
         title,
         startTime,
@@ -99,57 +132,38 @@ const NewEventModal = ({ initTime }) => {
       };
 
       const res = await dispatch(
-        createNewSchedule({
-          title: newFormData.title,
-          description: newFormData.description,
-          repeat: newFormData.repeat,
-          allday: newFormData.allday,
-          userID: currentUser._id,
-          eventDate: `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`,
-          eventLengthInMin: eventLengthInMin,
-          startTime: new Date(
-            selectedDate[3],
-            selectedDate[2] - 1,
-            selectedDate[1],
-            ...newFormData.startTime.split(':')
-          ),
-          endTime: new Date(
-            selectedDate[3],
-            selectedDate[2] - 1,
-            selectedDate[1],
-            ...newFormData.endTime.split(':')
-          )
-        })
+        createNewSchedule(currentLocalStates)
       ).unwrap();
 
-      if (res.data.schedules) {
-        const newSchedule = res.data.schedules;
-        dispatch(
-          addScheduleToDate({
-            date: `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`,
-            id: newSchedule._id,
-            schedule: newSchedule
-          })
-        );
-        dispatch(setEventModalOpen(false));
-        loadingAndDisable(false);
-        resetForm();
-        renderEventCard({
-          ...newFormData,
-          eventLengthInMin,
-          scheduleId: newSchedule._id
-        });
+      if (res && res.status === 'success') {
+        populateDay(selectedDate);
+        dispatch(setDimmer(true));
+
+        message.success('Event created successfully.', 4);
       }
     } else {
       // otherwise, update the existing event
-      console.log('patch update the event');
-      loadingAndDisable(false);
-      dispatch(setEventModalOpen(false));
-      resetForm();
+      const res = await dispatch(
+        updateScheduleById({
+          scheduleId: selectedEventId,
+          data: currentLocalStates
+        })
+      ).unwrap();
+
+      if (res && res.status === 'success') {
+        populateDay(selectedDate);
+        dispatch(setSelectedEventId(undefined));
+        dispatch(setDimmer(true));
+
+        message.success('Event updated successfully.', 4);
+      }
     }
 
     // clear the prefill content
     dispatch(setModalPrefill({}));
+    loadingAndDisable(false);
+    dispatch(setEventModalOpen(false));
+    resetForm();
   };
 
   // handle cancelling form
@@ -312,7 +326,7 @@ const NewEventModal = ({ initTime }) => {
               disabled={disabled}
               loading={loading}
             >
-              Create Event
+              {confirmButton}
             </Button>
           </div>
         </form>

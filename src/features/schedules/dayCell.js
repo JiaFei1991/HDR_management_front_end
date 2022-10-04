@@ -6,7 +6,7 @@ import HourCell from './hourCell';
 import NewEventModal from './newEventModal';
 import { ActionModal } from './ActionModal';
 import { populateDay } from './populateDay';
-import { setEventModalOpen } from './scheduleSlice';
+import { setEventModalOpen, setDimmer } from './scheduleSlice';
 
 const DayCell = () => {
   const dispatch = useDispatch();
@@ -14,6 +14,10 @@ const DayCell = () => {
 
   const dimmer = useSelector((state) => state.schedule.dimmer);
   const selectedDate = useSelector((state) => state.schedule.selectedDate);
+
+  useEffect(() => {
+    dispatch(setDimmer(true));
+  }, [dispatch]);
 
   useEffect(() => {
     populateDay(selectedDate);

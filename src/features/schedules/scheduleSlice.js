@@ -2,6 +2,18 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiInstance } from '../api/apiSlice';
 import { PURGE } from 'redux-persist';
 
+const extractTokens = (fn, actionName) => {
+  const state = fn();
+  const token = state.auth.token;
+  const refreshToken = state.auth.refreshToken;
+  if (!token || !refreshToken) {
+    console.log(`token missing in ${actionName}, request aborted.`);
+    return 'token missing';
+  }
+
+  return { token, refreshToken };
+};
+
 const initialState = {
   today: [
     new Date().getDay().toString(),
@@ -66,6 +78,26 @@ export const getCurrentDaySchedules = createAsyncThunk(
         refreshtoken: `Bearer ${refreshToken}`
       }
     });
+    return res.data;
+  }
+);
+
+export const updateScheduleById = createAsyncThunk(
+  'schedule/updateScheduleById',
+  async (dataObj, { getState }) => {
+    const tokenObj = extractTokens(getState, 'updateScheduleById');
+    if (tokenObj === 'token missing') return;
+
+    const res = await apiInstance({
+      url: `/schedules/${dataObj.scheduleId}`,
+      method: 'patch',
+      data: dataObj.data,
+      headers: {
+        authorization: `Bearer ${tokenObj.token}`,
+        refreshtoken: `Bearer ${tokenObj.refreshToken}`
+      }
+    });
+
     return res.data;
   }
 );
@@ -137,7 +169,6 @@ const ScheduleSlice = createSlice({
       ];
     },
     addScheduleToDate: (state, action) => {
-      // TODO: time zone conversion needs to be done
       if (!state.scheduleMonth[action.payload.date]) {
         state.scheduleMonth[action.payload.date] = {};
       }

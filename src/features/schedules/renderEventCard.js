@@ -39,7 +39,6 @@ export const renderEventCard = ({
     }
 
     eventCard.classList.add('event');
-    // TODO: change this to unique id
     eventCard.id = `event-${scheduleId}`;
 
     // title
