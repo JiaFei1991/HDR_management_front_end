@@ -26,11 +26,13 @@ export async function populateDay(selectedDate) {
         title: event.title,
         startTime: new Date(event.startTime).toLocaleTimeString([], {
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          hour12: false
         }),
         endTime: new Date(event.endTime).toLocaleTimeString([], {
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          hour12: false
         }),
         repeat: event.repeat,
         description: event.description,

@@ -5,10 +5,24 @@ import { setActionModalOpen, setSelectedEventId } from './scheduleSlice';
 const onEventClick = (e) => {
   e.stopPropagation();
   console.log(e.target);
-  console.log(e.target.id);
-
-  store.dispatch(setSelectedEventId(e.target.id.split('-')[1]));
-  store.dispatch(setActionModalOpen(true));
+  if (e.target) {
+    if (e.target.id) {
+      store.dispatch(setSelectedEventId(e.target.id.split('-')[1]));
+    } else if (
+      ['eventDescription', 'eventTitle', 'eventDuration'].includes(
+        e.target.className
+      )
+    ) {
+      let cardId;
+      if (['eventTitle', 'eventDuration'].includes(e.target.className)) {
+        cardId = e.target.parentElement.parentElement.id;
+      } else {
+        cardId = e.target.parentElement.id;
+      }
+      store.dispatch(setSelectedEventId(cardId.split('-')[1]));
+    }
+    store.dispatch(setActionModalOpen(true));
+  }
 };
 
 export const renderEventCard = ({

@@ -1,5 +1,5 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Space } from 'antd';
+import { Button, Form, Input, Space, message } from 'antd';
 import React from 'react';
 import { login } from './authSlice';
 import { useNavigate } from 'react-router';
@@ -16,17 +16,16 @@ const LoginForm = () => {
   // const loggedinUser = useSelector((state) => state.auth.loggedinUser);
 
   const onFinish = async (values) => {
-    // console.log('Received values of form: ', values);
-    try {
-      const response = await dispatch(login(values)).unwrap();
-      const loggedinUser = response.user;
-      if (loggedinUser) {
-        loggedinUser.role === 'student'
-          ? navigate('/home/schedule')
-          : navigate('/home/student');
-      }
-    } catch (err) {
-      console.log(err);
+    const response = await dispatch(login(values)).unwrap();
+
+    const loggedinUser = response.user;
+    if (loggedinUser) {
+      loggedinUser.role === 'student'
+        ? navigate('/home/schedule')
+        : navigate('/home/student');
+      message.success('login successful!', 4);
+    } else {
+      message.error(`${response.message}`, 4);
     }
   };
 

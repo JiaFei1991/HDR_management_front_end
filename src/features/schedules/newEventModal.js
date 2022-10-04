@@ -9,10 +9,11 @@ import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 
-import { renderEventCard } from './renderEventCard';
+// import { renderEventCard } from './renderEventCard';
 import { populateDay } from './populateDay';
+import { ParticipantPicker } from './participantPicker';
 import {
-  addScheduleToDate,
+  //   addScheduleToDate,
   createNewSchedule,
   setModalPrefill,
   setEventModalOpen,
@@ -28,6 +29,8 @@ const NewEventModal = ({ initTime }) => {
   const [title, setTitle] = useState('My new event');
   const [description, setDescription] = useState('Event description');
   const [checked, setChecked] = useState(false);
+  const [location, setLocation] = useState('None');
+  const [participants, setParticipants] = useState([]);
 
   const [timeDisabled, setTimeDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,6 +45,8 @@ const NewEventModal = ({ initTime }) => {
   const selectedEventId = useSelector(
     (state) => state.schedule.selectedEventId
   );
+  const supervisorsName = useSelector((state) => state.user.supervisorsName);
+  const studentsName = useSelector((state) => state.user.studentsName);
 
   useEffect(() => {
     if (Object.keys(prefillObj).length !== 0) {
@@ -51,6 +56,8 @@ const NewEventModal = ({ initTime }) => {
       setTitle(prefillObj.prefilledTitle);
       setDescription(prefillObj.prefilledDescription);
       setChecked(prefillObj.prefilledChecked);
+      setLocation(prefillObj.prefilledLocation);
+      setParticipants(prefillObj.prefilledParticipants);
 
       setConfirmButton('Update event');
     } else {
@@ -86,15 +93,18 @@ const NewEventModal = ({ initTime }) => {
         'Start time of the event cannot be equal to or later than the end time.',
         4
       );
+      loadingAndDisable(false);
       return;
     }
     const eventLengthInMin = (end - start) / (1000 * 60);
     if (eventLengthInMin < 30) {
       message.error('An event can be no shorter than 30 minutes.', 4);
+      loadingAndDisable(false);
       return;
     }
     if (title.length > 35) {
       message.error('A title cannot exceeds 35 letters.', 4);
+      loadingAndDisable(false);
       return;
     }
 
@@ -106,6 +116,8 @@ const NewEventModal = ({ initTime }) => {
       userID: currentUser._id,
       eventDate: `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`,
       eventLengthInMin,
+      location,
+      participants,
       startTime: new Date(
         selectedDate[3],
         selectedDate[2] - 1,
@@ -120,17 +132,10 @@ const NewEventModal = ({ initTime }) => {
       )
     };
 
+    console.log(currentLocalStates);
+
     // if prefill doesnt exist, submit form to create new event
     if (Object.keys(prefillObj).length === 0) {
-      const newFormData = {
-        title,
-        startTime,
-        endTime,
-        repeat,
-        description,
-        allday: checked
-      };
-
       const res = await dispatch(
         createNewSchedule(currentLocalStates)
       ).unwrap();
@@ -180,6 +185,8 @@ const NewEventModal = ({ initTime }) => {
     setRepeat('None');
     setTitle('My new event');
     setDescription('Event description');
+    setLocation('None');
+    setParticipants([]);
   };
 
   const onStartTimeChange = (e) => {
@@ -206,6 +213,10 @@ const NewEventModal = ({ initTime }) => {
     setRepeat(event.target.value);
   };
 
+  const onLocationChange = (event) => {
+    setLocation(event.target.value);
+  };
+
   return (
     <>
       <Modal
@@ -227,6 +238,29 @@ const NewEventModal = ({ initTime }) => {
               onChange={onTitleChange}
               disabled={disabled}
             />
+
+            <TextField
+              id="event-form-location"
+              name="location"
+              label="Location"
+              value={location}
+              onChange={onLocationChange}
+              disabled={disabled}
+            />
+
+            <ParticipantPicker
+              id="event-form-participant"
+              names={
+                supervisorsName && studentsName
+                  ? [...supervisorsName, ...studentsName].map(
+                      (nameObj) => nameObj.name
+                    )
+                  : []
+              }
+              participants={participants}
+              setParticipants={setParticipants}
+            />
+
             <div id="time-input">
               <TextField
                 required

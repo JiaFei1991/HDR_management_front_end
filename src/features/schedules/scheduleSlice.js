@@ -14,6 +14,19 @@ const extractTokens = (fn, actionName) => {
   return { token, refreshToken };
 };
 
+const getIdFromName = (objArray, participantsName) => {
+  let idArray = [];
+  participantsName.forEach((name) => {
+    objArray.forEach((obj) => {
+      if (obj.name === name) {
+        idArray.push(obj._id);
+      }
+    });
+  });
+
+  return idArray;
+};
+
 const initialState = {
   today: [
     new Date().getDay().toString(),
@@ -40,10 +53,18 @@ export const createNewSchedule = createAsyncThunk(
       console.log('token missing in getAllUsers, request aborted.');
       return;
     }
+
+    const supervisorsName = getState().user.supervisorsName;
+    const studentsName = getState().user.studentsName;
+    const idArray = getIdFromName(
+      [...supervisorsName, ...studentsName],
+      data.participants
+    );
+
     const res = await apiInstance({
       url: '/schedules',
       method: 'post',
-      data: data,
+      data: { ...data, participants: idArray },
       headers: {
         authorization: `Bearer ${token}`,
         refreshtoken: `Bearer ${refreshToken}`
@@ -88,10 +109,18 @@ export const updateScheduleById = createAsyncThunk(
     const tokenObj = extractTokens(getState, 'updateScheduleById');
     if (tokenObj === 'token missing') return;
 
+    const supervisorsName = getState().user.supervisorsName;
+    const studentsName = getState().user.studentsName;
+
+    const idArray = getIdFromName(
+      [...supervisorsName, ...studentsName],
+      dataObj.data.participants
+    );
+
     const res = await apiInstance({
       url: `/schedules/${dataObj.scheduleId}`,
       method: 'patch',
-      data: dataObj.data,
+      data: { ...dataObj.data, participants: idArray },
       headers: {
         authorization: `Bearer ${tokenObj.token}`,
         refreshtoken: `Bearer ${tokenObj.refreshToken}`

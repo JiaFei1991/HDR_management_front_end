@@ -20,6 +20,21 @@ export const ActionModal = () => {
   const selectedDate = useSelector((state) => state.schedule.selectedDate);
   const formattedDate = `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`;
   const scheduleMonth = useSelector((state) => state.schedule.scheduleMonth);
+  const supervisorsName = useSelector((state) => state.user.supervisorsName);
+  const studentsName = useSelector((state) => state.user.studentsName);
+
+  const getNameFromId = (participantsId) => {
+    let nameArray = [];
+    participantsId.forEach((id) => {
+      [...supervisorsName, ...studentsName].forEach((obj) => {
+        if (obj._id === id) {
+          nameArray.push(obj.name);
+        }
+      });
+    });
+
+    return nameArray;
+  };
 
   const handleEdit = () => {
     // prefill modal initial content
@@ -36,15 +51,19 @@ export const ActionModal = () => {
         [],
         {
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          hour12: false
         }
       ),
       prefilledEndTime: new Date(selectedEvent.endTime).toLocaleTimeString([], {
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        hour12: false
       }),
       prefilledRepeat: selectedEvent.repeat,
-      prefilledChecked: selectedEvent.allday
+      prefilledChecked: selectedEvent.allday,
+      prefilledLocation: selectedEvent.location,
+      prefilledParticipants: getNameFromId(selectedEvent.participants)
     };
 
     dispatch(setModalPrefill(prefillObj));

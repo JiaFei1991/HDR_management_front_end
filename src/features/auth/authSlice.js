@@ -11,17 +11,25 @@ const initialState = {
 };
 
 export const login = createAsyncThunk('auth/login', async (loginDetails) => {
-  const response = await axios({
-    method: 'post',
-    url: 'http://localhost:8000/HDRapi/v1/users/login',
-    data: {
-      email: loginDetails.userEmail,
-      password: loginDetails.userPassword
-    },
-    withCredentials: true
-  });
+  let response;
+  try {
+    response = await axios({
+      method: 'post',
+      url: 'http://localhost:8000/HDRapi/v1/users/login',
+      data: {
+        email: loginDetails.userEmail,
+        password: loginDetails.userPassword
+      },
+      withCredentials: true
+    });
 
-  return response.data;
+    return response.data;
+  } catch (err) {
+    if (!err.response) {
+      throw err;
+    }
+    return err.response.data;
+  }
 });
 
 export const logout = createAsyncThunk(
