@@ -190,7 +190,7 @@ const NewEventModal = ({ initTime }) => {
       endDate
     };
 
-    // console.log(currentLocalStates);
+    console.log(currentLocalStates);
     loadingAndDisable(true);
 
     // if prefill doesnt exist, submit form to create new event

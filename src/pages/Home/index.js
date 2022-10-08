@@ -158,14 +158,17 @@ const HomePage = () => {
   };
 
   const dateCellRender = (value) => {
-    for (let i = 0; i < monthNotification.length; i++) {
-      if (
-        checkDateEquality(
-          value._d.toLocaleDateString().split('/'),
-          monthNotification[i].split('-')
-        )
-      ) {
-        return <span className="dot"></span>;
+    // debugger;
+    if (monthNotification) {
+      for (let i = 0; i < monthNotification.length; i++) {
+        if (
+          checkDateEquality(
+            value._d.toLocaleDateString().split('/'),
+            monthNotification[i].split('-')
+          )
+        ) {
+          return <span className="dot"></span>;
+        }
       }
     }
   };
