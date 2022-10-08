@@ -9,11 +9,9 @@ import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 
-// import { renderEventCard } from './renderEventCard';
 import { populateDay } from './populateDay';
 import { ParticipantPicker } from './participantPicker';
 import {
-  //   addScheduleToDate,
   createNewSchedule,
   setModalPrefill,
   setEventModalOpen,
@@ -23,22 +21,9 @@ import {
 } from './scheduleSlice';
 
 const NewEventModal = ({ initTime }) => {
-  const [startTime, setStartTime] = useState('00:00');
-  const [endTime, setEndTime] = useState('00:00');
-  const [repeat, setRepeat] = useState('None');
-  const [title, setTitle] = useState('My new event');
-  const [description, setDescription] = useState('Event description');
-  const [checked, setChecked] = useState(false);
-  const [location, setLocation] = useState('None');
-  const [participants, setParticipants] = useState([]);
-
-  const [timeDisabled, setTimeDisabled] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [disabled, setDisabled] = useState(false);
-  const [confirmButton, setConfirmButton] = useState('Create event');
-
   const dispatch = useDispatch();
   const selectedDate = useSelector((state) => state.schedule.selectedDate);
+  const [weekDay, day, month, year] = selectedDate;
   const currentUser = useSelector((state) => state.auth.loggedinUser);
   const open = useSelector((state) => state.schedule.eventModalOpen);
   const prefillObj = useSelector((state) => state.schedule.modalPrefill);
@@ -47,6 +32,23 @@ const NewEventModal = ({ initTime }) => {
   );
   const supervisorsName = useSelector((state) => state.user.supervisorsName);
   const studentsName = useSelector((state) => state.user.studentsName);
+
+  const [startTime, setStartTime] = useState('00:00');
+  const [endTime, setEndTime] = useState('00:00');
+  const [repeat, setRepeat] = useState('None');
+  const [title, setTitle] = useState('My new event');
+  const [description, setDescription] = useState('Event description');
+  const [checked, setChecked] = useState(false);
+  const [location, setLocation] = useState('None');
+  const [participants, setParticipants] = useState([]);
+  const [startDate, setStartDate] = useState(`${year}-${month}-${day}`);
+  const [endDate, setEndDate] = useState(`${year}-${month}-${day}`);
+
+  const [timeDisabled, setTimeDisabled] = useState(false);
+  const [dateDisabled, setDateDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  const [confirmButton, setConfirmButton] = useState('Create event');
 
   useEffect(() => {
     if (Object.keys(prefillObj).length !== 0) {
@@ -58,6 +60,8 @@ const NewEventModal = ({ initTime }) => {
       setChecked(prefillObj.prefilledChecked);
       setLocation(prefillObj.prefilledLocation);
       setParticipants(prefillObj.prefilledParticipants);
+      setStartDate(prefillObj.prefilledStartDate);
+      setEndDate(prefillObj.prefilledEndDate);
 
       setConfirmButton('Update event');
     } else {
@@ -70,16 +74,29 @@ const NewEventModal = ({ initTime }) => {
     setEndTime(initTime[1]);
   }, [initTime]);
 
+  useEffect(() => {
+    setStartDate(`${year}-${month}-${day}`);
+    setEndDate(`${year}-${month}-${day}`);
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (repeat === 'None') {
+      setDateDisabled(true);
+    } else {
+      setDateDisabled(false);
+    }
+  }, [repeat]);
+
   const loadingAndDisable = (value) => {
     setLoading(value);
     setDisabled(value);
     setTimeDisabled(value);
+    setDateDisabled(value);
   };
 
   // handle form submission and create new event
   const handleSubmit = async (e) => {
     e.preventDefault();
-    loadingAndDisable(true);
 
     const [startHour, startMin] = startTime.split(':');
     const [endHour, endMin] = endTime.split(':');
@@ -108,6 +125,45 @@ const NewEventModal = ({ initTime }) => {
       return;
     }
 
+    if (repeat !== 'None') {
+      const oneDay = 24 * 60 * 60 * 1000;
+      const [firstYear, firstMonth, firstDay] = startDate.split('-');
+      const [lastYear, lastMonth, lastDay] = endDate.split('-');
+      const firstDate = new Date(firstYear, firstMonth, firstDay);
+      const lastDate = new Date(lastYear, lastMonth, lastDay);
+      const differenceInDays = Math.round(
+        Math.abs((firstDate - lastDate) / oneDay)
+      );
+      switch (repeat) {
+        case 'Daily':
+          if (differenceInDays <= 1) {
+            message.warning('Duration too short for repeating events', 4);
+            return;
+          }
+          break;
+        case 'Weekly':
+          if (differenceInDays / 7 <= 1) {
+            message.warning('Duration too short for repeating events', 4);
+            return;
+          }
+          break;
+        case 'Monthly':
+          if (differenceInDays / 30 <= 1) {
+            message.warning('Duration too short for repeating events', 4);
+            return;
+          }
+          break;
+        case 'Yearly':
+          if (differenceInDays / 365 <= 1) {
+            message.warning('Duration too short for repeating events', 4);
+            return;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
     const currentLocalStates = {
       title,
       description,
@@ -129,17 +185,19 @@ const NewEventModal = ({ initTime }) => {
         selectedDate[2] - 1,
         selectedDate[1],
         ...endTime.split(':')
-      )
+      ),
+      startDate,
+      endDate
     };
 
-    console.log(currentLocalStates);
+    // console.log(currentLocalStates);
+    loadingAndDisable(true);
 
     // if prefill doesnt exist, submit form to create new event
     if (Object.keys(prefillObj).length === 0) {
       const res = await dispatch(
         createNewSchedule(currentLocalStates)
       ).unwrap();
-
       if (res && res.status === 'success') {
         populateDay(selectedDate);
         dispatch(setDimmer(true));
@@ -217,12 +275,20 @@ const NewEventModal = ({ initTime }) => {
     setLocation(event.target.value);
   };
 
+  const onStartDateChange = (event) => {
+    setStartDate(event.target.value);
+  };
+
+  const onEndDateChange = (event) => {
+    setEndDate(event.target.value);
+  };
+
   return (
     <>
       <Modal
         title="Create an new event"
         open={open}
-        width={600}
+        width={750}
         footer={null}
         maskClosable={false}
         onCancel={handleCancel}
@@ -327,6 +393,32 @@ const NewEventModal = ({ initTime }) => {
                   <MenuItem value={'Yearly'}>Yearly</MenuItem>
                 </Select>
               </FormControl>
+
+              <TextField
+                id="event-form-startDate"
+                label="Start from"
+                type="date"
+                value={startDate}
+                onChange={onStartDateChange}
+                disabled={dateDisabled}
+                sx={{ width: 220 }}
+                InputLabelProps={{
+                  shrink: true
+                }}
+              />
+
+              <TextField
+                id="event-form-endDate"
+                label="Until"
+                type="date"
+                value={endDate}
+                onChange={onEndDateChange}
+                disabled={dateDisabled}
+                sx={{ width: 220 }}
+                InputLabelProps={{
+                  shrink: true
+                }}
+              />
 
               <FormControlLabel
                 control={

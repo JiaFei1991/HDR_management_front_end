@@ -3,7 +3,7 @@ import { Button, Form, Input, Space, message } from 'antd';
 import React from 'react';
 import { login } from './authSlice';
 import { useNavigate } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import RegisterModal from '../users/registerModal';
 import ForgotPassModal from '../auth/forgotPassModal';
 import { openModal } from '../users/userSlice';
@@ -12,8 +12,6 @@ import { openForgotPassModal } from './authSlice';
 const LoginForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // const loggedinUser = useSelector((state) => state.auth.loggedinUser);
 
   const onFinish = async (values) => {
     const response = await dispatch(login(values)).unwrap();

@@ -3,17 +3,21 @@ import React, { useState, useEffect } from 'react';
 import '../../style.css';
 
 import DayCell from './dayCell';
-import { vh, vw } from '../util/layoutCalc';
+import { vh, vw, resizeEventCard } from '../util/layoutCalc';
 
 const DayScheduler = () => {
   const [vhSize, setVhSize] = useState(vh(100));
   const [vwSize, setVwSize] = useState(vw(100));
   const today = useSelector((state) => state.schedule.selectedDate);
 
-  window.onresize = function () {
-    setVhSize(100);
-    setVwSize(100);
-  };
+  let timeoutId;
+  window.addEventListener('resize', () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      setVhSize(window.innerWidth);
+      setVwSize(window.innerHeight);
+    }, 250);
+  });
 
   useEffect(() => {
     const mainPageComponent = document.getElementById('main-page');
@@ -22,12 +26,19 @@ const DayScheduler = () => {
     const schedulerHeader = document.getElementById('scheduler-header');
     const schedulerBody = document.getElementById('scheduler-body');
 
-    // const hourRow = document.getElementsByClassName('row');
-    // const events = document.getElementsByClassName('event');
+    const resizeTargetList = [
+      ...document.getElementsByClassName('event'),
+      ...document.getElementsByClassName('event-foreign')
+    ];
+    const alldayEvents = [
+      ...document.getElementsByClassName('event-allday'),
+      ...document.getElementsByClassName('event-allday-foreign')
+    ];
 
-    // if (hourRow.length !== 0 && events.length !== 0) {
-    //   events.style.maxWidth = hourRow.clientWidth;
-    // }
+    const isThereAllday = alldayEvents.length !== 0;
+    for (let i = 0; i < resizeTargetList.length; i++) {
+      resizeEventCard(isThereAllday, resizeTargetList[i]);
+    }
 
     if (
       breadcrumbComponent &&

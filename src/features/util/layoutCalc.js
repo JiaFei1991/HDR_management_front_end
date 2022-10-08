@@ -13,3 +13,21 @@ export function vw(percent) {
   );
   return (percent * w) / 100;
 }
+
+export function vwToPx(vw) {
+  var w = Math.max(
+    document.documentElement.clientWidth,
+    window.innerWidth || 0
+  );
+  return w * (vw / 100);
+}
+
+export function resizeEventCard(isThereAllday, target) {
+  const fullWidth = document.getElementsByName('0-first')[0].clientWidth;
+
+  let cardWidth;
+  isThereAllday
+    ? (cardWidth = `${fullWidth - vwToPx(2)}px`)
+    : (cardWidth = `${fullWidth}px`);
+  target.style.width = cardWidth;
+}

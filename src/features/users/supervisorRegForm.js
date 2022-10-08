@@ -63,8 +63,6 @@ const SupervisorRegForm = ({ role }) => {
     values['avatar'] = values.avatar[0].originFileObj;
     values['studentIds'] = studentIds;
 
-    console.log(values);
-
     const formData = new FormData();
     for (const name in values) {
       formData.append(name, values[name]);

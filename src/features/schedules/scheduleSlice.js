@@ -41,7 +41,8 @@ const initialState = {
   eventModalOpen: false,
   actionModalOpen: false,
   selectedEventId: undefined,
-  modalPrefill: {}
+  modalPrefill: {},
+  monthNotification: []
 };
 
 export const createNewSchedule = createAsyncThunk(
@@ -77,14 +78,10 @@ export const createNewSchedule = createAsyncThunk(
 export const getCurrentDaySchedules = createAsyncThunk(
   'schedule/getCurrentDaySchedules',
   async (date, { getState }) => {
-    const state = getState();
-    const token = state.auth.token;
-    const refreshToken = state.auth.refreshToken;
-    if (!token || !refreshToken) {
-      console.log('token missing in getAllUsers, request aborted.');
-      return;
-    }
-    const currentUserId = state.auth.loggedinUser._id;
+    const tokenObj = extractTokens(getState, 'getCurrentDaySchedules');
+    if (tokenObj === 'token missing') return;
+
+    const currentUserId = getState().auth.loggedinUser._id;
     if (!currentUserId) {
       console.log(
         'current user id missing in getCurrentDaySchedules, request aborted.'
@@ -95,10 +92,37 @@ export const getCurrentDaySchedules = createAsyncThunk(
       url: `/users/${currentUserId}/schedules/${date}`,
       method: 'get',
       headers: {
-        authorization: `Bearer ${token}`,
-        refreshtoken: `Bearer ${refreshToken}`
+        authorization: `Bearer ${tokenObj.token}`,
+        refreshtoken: `Bearer ${tokenObj.refreshToken}`
       }
     });
+    return res.data;
+  }
+);
+
+export const getScheduleNotificationOfMonth = createAsyncThunk(
+  'schedule/getScheduleNotificationOfMonth',
+  async (monthAndYear, { getState }) => {
+    const tokenObj = extractTokens(getState, 'getScheduleNotificationOfMonth');
+    if (tokenObj === 'token missing') return;
+
+    const currentUserId = getState().auth.loggedinUser._id;
+    if (!currentUserId) {
+      console.log(
+        'current user id missing in getScheduleNotificationOfMonth, request aborted.'
+      );
+      return;
+    }
+
+    const res = await apiInstance({
+      url: `/users/${currentUserId}/schedules/${monthAndYear}`,
+      method: 'get',
+      headers: {
+        authorization: `Bearer ${tokenObj.token}`,
+        refreshtoken: `Bearer ${tokenObj.refreshToken}`
+      }
+    });
+
     return res.data;
   }
 );
@@ -230,16 +254,24 @@ const ScheduleSlice = createSlice({
         return initialState;
       })
       .addCase(getCurrentDaySchedules.fulfilled, (state, action) => {
+        // clear the current state scheduleMonth before assigning the new ones
+        state.scheduleMonth[
+          `${state.selectedDate[1]}-${state.selectedDate[2]}-${state.selectedDate[3]}`
+        ] = {};
         if (action.payload && action.payload.data.data.length !== 0) {
           const eventArray = action.payload.data.data;
-          const date = eventArray[0].eventDate;
-
-          // clear the current state scheduleMonth before assigning the new ones
-          state.scheduleMonth[date] = {};
+          // const date = eventArray[0].eventDate;
 
           eventArray.forEach((event) => {
-            state.scheduleMonth[date][event._id] = event;
+            state.scheduleMonth[
+              `${state.selectedDate[1]}-${state.selectedDate[2]}-${state.selectedDate[3]}`
+            ][event._id] = event;
           });
+        }
+      })
+      .addCase(getScheduleNotificationOfMonth.fulfilled, (state, action) => {
+        if (action.payload && action.payload.data) {
+          state.monthNotification = action.payload.data;
         }
       });
   }

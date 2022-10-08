@@ -1,17 +1,22 @@
 import { store } from '../../app/store';
 import { getRandomColor } from '../util/randomColor';
 import { setActionModalOpen, setSelectedEventId } from './scheduleSlice';
+import { vwToPx } from '../util/layoutCalc';
 
 const onEventClick = (e) => {
   e.stopPropagation();
-  console.log(e.target);
+
+  // console.log(e.target);
   if (e.target) {
-    if (e.target.id) {
+    if (e.target.id && e.target.id !== '') {
       store.dispatch(setSelectedEventId(e.target.id.split('-')[1]));
     } else if (
-      ['eventDescription', 'eventTitle', 'eventDuration'].includes(
-        e.target.className
-      )
+      [
+        'eventDescription',
+        'eventTitle',
+        'eventDuration',
+        'eventTitleContainer'
+      ].includes(e.target.className)
     ) {
       let cardId;
       if (['eventTitle', 'eventDuration'].includes(e.target.className)) {
@@ -32,12 +37,19 @@ export const renderEventCard = ({
   repeat,
   description,
   allday,
+  scheduleId,
   eventLengthInMin,
-  scheduleId
+  myEvent,
+  isThereAllday
 }) => {
   let targetElement;
   const eventCard = document.createElement('div');
   eventCard.addEventListener('click', onEventClick);
+
+  const fullWidth = document.getElementsByName('0-first')[0].clientWidth;
+
+  let foreignEventClassName;
+  myEvent ? (foreignEventClassName = '') : (foreignEventClassName = '-foreign');
 
   if (!allday) {
     // calculate card height in vh, half of an hour is 3vh
@@ -52,7 +64,7 @@ export const renderEventCard = ({
       cardStartPosInVh = (Number(startMin) - 30) * (3 / 30);
     }
 
-    eventCard.classList.add('event');
+    eventCard.classList.add(`event${foreignEventClassName}`);
     eventCard.id = `event-${scheduleId}`;
 
     // title
@@ -100,7 +112,12 @@ export const renderEventCard = ({
       eventCard.appendChild(eventDescription);
     }
 
-    eventCard.style.width = '20vw';
+    // eventCard.style.width = '20vw';
+    let cardWidth;
+    isThereAllday
+      ? (cardWidth = `${fullWidth - vwToPx(2)}px`)
+      : (cardWidth = `${fullWidth}px`);
+    eventCard.style.width = cardWidth;
     eventCard.style.height = `${cardHeightInVh}vh`;
     eventCard.style.top = `${cardStartPosInVh}vh`;
     eventCard.style.backgroundColor = `${getRandomColor()}`;
@@ -110,8 +127,8 @@ export const renderEventCard = ({
       `${Number(startHour)}-${Number(startMin) <= 30 ? 'first' : 'second'}`
     );
   } else {
-    eventCard.classList.add('alldayEvent');
-    eventCard.id = `allday-event-${title}`;
+    eventCard.classList.add(`event-allday${foreignEventClassName}`);
+    eventCard.id = `event-${scheduleId}`;
     eventCard.style.backgroundColor = `${getRandomColor()}`;
 
     const eventTitle = document.createElement('h4');

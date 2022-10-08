@@ -12,14 +12,32 @@ import 'semantic-ui-css/semantic.min.css';
 import LogoutButton from '../../features/auth/logoutButton';
 import AvatarButton from '../../features/auth/avatarButton';
 import TodayList from '../../features/schedules/todayList';
-import { selectDate, setDimmer } from '../../features/schedules/scheduleSlice';
+import {
+  selectDate,
+  setDimmer,
+  getCurrentDaySchedules,
+  getScheduleNotificationOfMonth
+} from '../../features/schedules/scheduleSlice';
 
 const { Content } = Layout;
+
+const checkDateEquality = (calendarDate, stateDate) => {
+  for (let i = 0; i < calendarDate.length; i++) {
+    if (calendarDate[i] !== stateDate[i]) return false;
+  }
+
+  return true;
+};
 
 const HomePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loggedinUser = useSelector((state) => state.auth.loggedinUser);
+  const monthNotification = useSelector(
+    (state) => state.schedule.monthNotification
+  );
+  const selectedDate = useSelector((state) => state.schedule.selectedDate);
+  const scheduleMonth = useSelector((state) => state.schedule.scheduleMonth);
 
   const [vhSize, setVhSize] = useState(vh(100));
   const [vwSize, setVwSize] = useState(vw(100));
@@ -31,10 +49,14 @@ const HomePage = () => {
       : undefined
   );
 
-  window.onresize = function () {
-    setVhSize(vh(100));
-    setVwSize(vw(100));
-  };
+  let timeoutId;
+  window.addEventListener('resize', () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      setVhSize(window.innerWidth);
+      setVwSize(window.innerHeight);
+    }, 250);
+  });
 
   useEffect(() => {
     //calculate the height of right-sider-list
@@ -56,14 +78,26 @@ const HomePage = () => {
 
     if (menuComponent && mainPageComponent) {
       const mainPageWidthInPx = vw(100 - 25) - menuComponent.clientWidth;
-      mainPageComponent.style.minWidth = `${mainPageWidthInPx}px`;
+      mainPageComponent.style.width = `${mainPageWidthInPx}px`;
     }
   }, [vhSize, vwSize]);
+
+  // on any change in scheduleMonth, refetch the notifications so that its up to date
+  useEffect(() => {
+    dispatch(
+      getScheduleNotificationOfMonth(`${selectedDate[2]}-${selectedDate[3]}`)
+    );
+  }, [scheduleMonth, selectedDate]);
 
   const onSelectDate = (moment) => {
     dispatch(setDimmer(true));
     const selectedDate = moment._d.toString().split(' ').slice(0, 4);
     dispatch(selectDate(selectedDate));
+    // dispatch(
+    //   getCurrentDaySchedules(
+    //     `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`
+    //   )
+    // );
   };
 
   let studentMenuItems = [
@@ -124,10 +158,16 @@ const HomePage = () => {
   };
 
   const dateCellRender = (value) => {
-    if (value.date() === 21) {
-      return <h6>Content</h6>;
+    for (let i = 0; i < monthNotification.length; i++) {
+      if (
+        checkDateEquality(
+          value._d.toLocaleDateString().split('/'),
+          monthNotification[i].split('-')
+        )
+      ) {
+        return <span className="dot"></span>;
+      }
     }
-    return;
   };
 
   const handleMenuClick = (e) => {

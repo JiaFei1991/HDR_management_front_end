@@ -7,7 +7,8 @@ import {
   setActionModalOpen,
   deleteOneSchedule,
   setDimmer,
-  setModalPrefill
+  setModalPrefill,
+  getScheduleNotificationOfMonth
 } from './scheduleSlice';
 import { populateDay } from './populateDay';
 
@@ -44,7 +45,7 @@ export const ActionModal = () => {
       selectedEvent = scheduleMonth[formattedDate][eventId];
     }
 
-    const prefillObj = {
+    let prefillObj = {
       prefilledTitle: selectedEvent.title,
       prefilledDescription: selectedEvent.description,
       prefilledStartTime: new Date(selectedEvent.startTime).toLocaleTimeString(
@@ -66,6 +67,36 @@ export const ActionModal = () => {
       prefilledParticipants: getNameFromId(selectedEvent.participants)
     };
 
+    if (!selectedEvent.startDate && !selectedEvent.endDate) {
+      prefillObj = {
+        ...prefillObj,
+        prefilledStartDate: `${selectedDate[3]}-${selectedDate[2]}-${selectedDate[1]}`,
+        prefilledEndDate: `${selectedDate[3]}-${selectedDate[2]}-${selectedDate[1]}`
+      };
+    } else {
+      prefillObj = {
+        ...prefillObj,
+        prefilledStartDate: new Date(selectedEvent.startDate)
+          .toLocaleDateString('en-au', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
+          })
+          .split('/')
+          .reverse()
+          .join('-'),
+        prefilledEndDate: new Date(selectedEvent.endDate)
+          .toLocaleDateString('en-au', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
+          })
+          .split('/')
+          .reverse()
+          .join('-')
+      };
+    }
+
     dispatch(setModalPrefill(prefillObj));
 
     // close the action modal
@@ -76,6 +107,7 @@ export const ActionModal = () => {
   };
 
   const handleDelete = async () => {
+    // debugger;
     setDeleteLoading(true);
     const res = await dispatch(deleteOneSchedule(eventId)).unwrap();
 
@@ -89,6 +121,9 @@ export const ActionModal = () => {
       dispatch(setSelectedEventId(undefined));
       dispatch(setDimmer(true));
     }
+    dispatch(
+      getScheduleNotificationOfMonth(`${selectedDate[2]}-${selectedDate[3]}`)
+    );
   };
 
   const handleCancel = () => {

@@ -5,9 +5,16 @@ import { renderEventCard } from './renderEventCard';
 export async function populateDay(selectedDate) {
   // clear all existing events before populating events from server
   const existingEvents = document.querySelectorAll('.event');
-  if (existingEvents.length !== 0) {
-    for (let i = 0; i < existingEvents.length; i++) {
-      existingEvents[i].remove();
+  const existingForeignEvents = document.querySelectorAll('.event-foreign');
+  const existingAlldayEvents = document.querySelectorAll('.event-allday');
+  const allExistingEvents = [
+    ...existingEvents,
+    ...existingForeignEvents,
+    ...existingAlldayEvents
+  ];
+  if (allExistingEvents.length !== 0) {
+    for (let i = 0; i < allExistingEvents.length; i++) {
+      allExistingEvents[i].remove();
     }
   }
 
@@ -19,9 +26,22 @@ export async function populateDay(selectedDate) {
     )
     .unwrap();
 
+  // const events =
+  //   store.getState().schedule.scheduleMonth[
+  //     `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`
+  //   ];
+
+  // Object.keys(events).length !== 0
   if (events && events.data.data.length !== 0) {
+    // debugger;
+    const allday = events.data.allday;
     const arrayOfEvents = events.data.data;
     arrayOfEvents.forEach((event) => {
+      let myEvent;
+      event.userID === store.getState().auth.loggedinUser._id
+        ? (myEvent = true)
+        : (myEvent = false);
+
       renderEventCard({
         title: event.title,
         startTime: new Date(event.startTime).toLocaleTimeString([], {
@@ -38,7 +58,9 @@ export async function populateDay(selectedDate) {
         description: event.description,
         allday: event.allday,
         scheduleId: event._id,
-        eventLengthInMin: event.eventLengthInMin
+        eventLengthInMin: event.eventLengthInMin,
+        myEvent,
+        isThereAllday: allday
       });
     });
   }

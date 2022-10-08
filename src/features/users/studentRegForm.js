@@ -39,8 +39,6 @@ const StudentRegForm = ({ role }) => {
       }
     }
 
-    console.log(values);
-
     const formData = new FormData();
     for (const name in values) {
       formData.append(name, values[name]);
