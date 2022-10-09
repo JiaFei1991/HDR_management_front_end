@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiInstance } from '../api/apiSlice';
+import apiInstance from '../api/apiSlice';
 import { PURGE } from 'redux-persist';
 import axios from 'axios';
 

@@ -35,8 +35,8 @@ export const login = createAsyncThunk('auth/login', async (loginDetails) => {
 export const logout = createAsyncThunk(
   'auth/logout',
   async (arg, { getState }) => {
-    const token = getState().auth.token;
-    const refreshToken = getState().auth.refreshToken;
+    const { token } = getState().auth;
+    const { refreshToken } = getState().auth;
     if (!token || !refreshToken) {
       // just a reminder, program will continue to log user out
       console.log('token missing in logout process.');
@@ -84,9 +84,11 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     openForgotPassModal: (state, action) => {
-      action.payload
-        ? (state.forgotPassModalOpen = true)
-        : (state.forgotPassModalOpen = false);
+      if (action.payload) {
+        state.forgotPassModalOpen = true;
+      } else {
+        state.forgotPassModalOpen = false;
+      }
     }
   },
   extraReducers(builder) {
@@ -107,9 +109,7 @@ const authSlice = createSlice({
         };
         return returnObj;
       })
-      .addCase(PURGE, (state, action) => {
-        return initialState;
-      });
+      .addCase(PURGE, (state, action) => initialState);
     // .addCase(resetPassword.rejected, (state, action) => {
     //   console.log(action.payload);
     //   return action.payload;

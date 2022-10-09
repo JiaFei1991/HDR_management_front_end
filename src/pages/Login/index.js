@@ -1,7 +1,7 @@
 import { Layout, Space } from 'antd';
 import React from 'react';
 import LoginForm from '../../features/auth/loginForm';
-import './index.css';
+import '../../style.css';
 import { useDispatch } from 'react-redux';
 import {
   getAllSupervisorsName,

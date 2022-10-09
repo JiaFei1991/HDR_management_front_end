@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { Outlet } from 'react-router-dom';
 import { vh, vw } from '../../features/util/layoutCalc';
 import '../../style.css';
-import 'antd/dist/antd.css';
+import 'antd/dist/antd.min.css';
 import 'semantic-ui-css/semantic.min.css';
 
 import LogoutButton from '../../features/auth/logoutButton';
@@ -15,7 +15,6 @@ import TodayList from '../../features/schedules/todayList';
 import {
   selectDate,
   setDimmer,
-  getCurrentDaySchedules,
   getScheduleNotificationOfMonth
 } from '../../features/schedules/scheduleSlice';
 
@@ -87,7 +86,8 @@ const HomePage = () => {
     dispatch(
       getScheduleNotificationOfMonth(`${selectedDate[2]}-${selectedDate[3]}`)
     );
-  }, [scheduleMonth, selectedDate]);
+  }, [scheduleMonth, selectedDate, dispatch]);
+  // TODO: see if the above two dependencies are both needed
 
   const onSelectDate = (moment) => {
     dispatch(setDimmer(true));

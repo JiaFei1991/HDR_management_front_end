@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiInstance } from '../api/apiSlice';
+import apiInstance from '../api/apiSlice';
 import { PURGE } from 'redux-persist';
 
 const extractTokens = (fn, actionName) => {
   const state = fn();
-  const token = state.auth.token;
-  const refreshToken = state.auth.refreshToken;
+  const { token } = state.auth;
+  const { refreshToken } = state.auth;
   if (!token || !refreshToken) {
     console.log(`token missing in ${actionName}, request aborted.`);
     return 'token missing';
@@ -48,15 +48,11 @@ const initialState = {
 export const createNewSchedule = createAsyncThunk(
   'schedule/createNewSchedule',
   async (data, { getState }) => {
-    const token = getState().auth.token;
-    const refreshToken = getState().auth.refreshToken;
-    if (!token || !refreshToken) {
-      console.log('token missing in getAllUsers, request aborted.');
-      return;
-    }
+    const tokenObj = extractTokens(getState, 'createNewSchedule');
+    if (tokenObj === 'token missing') return;
 
-    const supervisorsName = getState().user.supervisorsName;
-    const studentsName = getState().user.studentsName;
+    const { supervisorsName } = getState().user;
+    const { studentsName } = getState().user;
     const idArray = getIdFromName(
       [...supervisorsName, ...studentsName],
       data.participants
@@ -67,8 +63,8 @@ export const createNewSchedule = createAsyncThunk(
       method: 'post',
       data: { ...data, participants: idArray },
       headers: {
-        authorization: `Bearer ${token}`,
-        refreshtoken: `Bearer ${refreshToken}`
+        authorization: `Bearer ${tokenObj.token}`,
+        refreshtoken: `Bearer ${tokenObj.refreshToken}`
       }
     });
     return res.data;
@@ -133,8 +129,8 @@ export const updateScheduleById = createAsyncThunk(
     const tokenObj = extractTokens(getState, 'updateScheduleById');
     if (tokenObj === 'token missing') return;
 
-    const supervisorsName = getState().user.supervisorsName;
-    const studentsName = getState().user.studentsName;
+    const { supervisorsName } = getState().user;
+    const { studentsName } = getState().user;
 
     const idArray = getIdFromName(
       [...supervisorsName, ...studentsName],
@@ -158,19 +154,15 @@ export const updateScheduleById = createAsyncThunk(
 export const deleteOneSchedule = createAsyncThunk(
   'schedule/deleteOneSchedule',
   async (scheduleId, { getState }) => {
-    const state = getState();
-    const token = state.auth.token;
-    const refreshToken = state.auth.refreshToken;
-    if (!token || !refreshToken) {
-      console.log('token missing in deleteOneSchedule, request aborted.');
-      return;
-    }
+    const tokenObj = extractTokens(getState, 'deleteOneSchedule');
+    if (tokenObj === 'token missing') return;
+
     const res = await apiInstance({
       url: `/schedules/${scheduleId}`,
       method: 'delete',
       headers: {
-        authorization: `Bearer ${token}`,
-        refreshtoken: `Bearer ${refreshToken}`
+        authorization: `Bearer ${tokenObj.token}`,
+        refreshtoken: `Bearer ${tokenObj.refreshToken}`
       }
     });
 

@@ -13,7 +13,6 @@ const App = () => {
     <Routes>
       <Route exact path="/" element={<LoginPage />} />
       <Route exact path="/home" element={<HomePage />}>
-        {/* <Route index element={<HomePage />} /> */}
         <Route path="schedule" element={<SchedulePage />} />
         <Route path="student" element={<StudentPage />} />
         <Route path="session" element={<SessionPage />} />

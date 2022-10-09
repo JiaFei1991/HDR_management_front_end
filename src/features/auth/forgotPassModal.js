@@ -2,7 +2,6 @@ import { Button, Modal, Form, Input, message } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { openForgotPassModal, resetPassword } from './authSlice';
-import axios from 'axios';
 
 const RegisterModal = () => {
   const dispatch = useDispatch();

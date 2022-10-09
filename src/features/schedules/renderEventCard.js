@@ -6,7 +6,7 @@ import { vwToPx } from '../util/layoutCalc';
 const onEventClick = (e) => {
   e.stopPropagation();
 
-  // console.log(e.target);
+  console.log(e.target);
   if (e.target) {
     if (e.target.id && e.target.id !== '') {
       store.dispatch(setSelectedEventId(e.target.id.split('-')[1]));

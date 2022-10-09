@@ -8,21 +8,25 @@ import {
   deleteOneSchedule,
   setDimmer,
   setModalPrefill,
-  getScheduleNotificationOfMonth
+  updateScheduleById
 } from './scheduleSlice';
 import { populateDay } from './populateDay';
 
 export const ActionModal = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   const dispatch = useDispatch();
   const open = useSelector((state) => state.schedule.actionModalOpen);
-  const eventId = useSelector((state) => state.schedule.selectedEventId);
+  const selectedEventId = useSelector(
+    (state) => state.schedule.selectedEventId
+  );
   const selectedDate = useSelector((state) => state.schedule.selectedDate);
   const formattedDate = `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`;
   const scheduleMonth = useSelector((state) => state.schedule.scheduleMonth);
   const supervisorsName = useSelector((state) => state.user.supervisorsName);
   const studentsName = useSelector((state) => state.user.studentsName);
+  const loggedinUser = useSelector((state) => state.auth.loggedinUser);
 
   const getNameFromId = (participantsId) => {
     let nameArray = [];
@@ -42,7 +46,7 @@ export const ActionModal = () => {
     let selectedEvent;
 
     if (scheduleMonth[formattedDate]) {
-      selectedEvent = scheduleMonth[formattedDate][eventId];
+      selectedEvent = scheduleMonth[formattedDate][selectedEventId];
     }
 
     let prefillObj = {
@@ -109,7 +113,7 @@ export const ActionModal = () => {
   const handleDelete = async () => {
     // debugger;
     setDeleteLoading(true);
-    const res = await dispatch(deleteOneSchedule(eventId)).unwrap();
+    const res = await dispatch(deleteOneSchedule(selectedEventId)).unwrap();
 
     if (res && res.status === 'success') {
       setDeleteLoading(false);
@@ -121,14 +125,99 @@ export const ActionModal = () => {
       dispatch(setSelectedEventId(undefined));
       dispatch(setDimmer(true));
     }
-    dispatch(
-      getScheduleNotificationOfMonth(`${selectedDate[2]}-${selectedDate[3]}`)
-    );
+  };
+
+  const handleReject = async () => {
+    console.log('clicked reject button!');
+    setRejectLoading(true);
+
+    const participantsArray = [
+      ...scheduleMonth[formattedDate][selectedEventId].participants
+    ];
+    const index = participantsArray.indexOf(loggedinUser._id);
+    // only splice array when item is found
+    if (index > -1) {
+      participantsArray.splice(index, 1);
+    }
+
+    const res = await dispatch(
+      updateScheduleById({
+        scheduleId: selectedEventId,
+        data: {
+          ...scheduleMonth[formattedDate][selectedEventId],
+          participants: participantsArray
+        }
+      })
+    ).unwrap();
+
+    if (res && res.status === 'success') {
+      // debugger;
+      setRejectLoading(false);
+      dispatch(setActionModalOpen(false));
+      message.success('You have been removed from the schedule!', 4);
+
+      // then populate the day with newly fetched events
+      populateDay(selectedDate);
+      dispatch(setSelectedEventId(undefined));
+      dispatch(setDimmer(true));
+    }
   };
 
   const handleCancel = () => {
     dispatch(setActionModalOpen(false));
   };
+
+  // determine whether the event is foreign
+  let actionButtons = (
+    <>
+      <Button
+        type="primary"
+        ghost
+        htmlType="submit"
+        name="submit-button"
+        onClick={handleEdit}
+      >
+        Edit
+      </Button>
+      <Button
+        type="primary"
+        danger
+        loading={deleteLoading}
+        onClick={handleDelete}
+      >
+        Delete
+      </Button>
+    </>
+  );
+  if (
+    loggedinUser &&
+    scheduleMonth[formattedDate] &&
+    Object.keys(scheduleMonth[formattedDate]).length !== 0 &&
+    scheduleMonth[formattedDate][selectedEventId] &&
+    scheduleMonth[formattedDate][selectedEventId].userID !== loggedinUser._id
+  ) {
+    actionButtons = (
+      <>
+        <Button
+          type="primary"
+          ghost
+          htmlType="submit"
+          name="submit-button"
+          onClick={handleCancel}
+        >
+          Accpet
+        </Button>
+        <Button
+          type="primary"
+          danger
+          loading={rejectLoading}
+          onClick={handleReject}
+        >
+          Reject
+        </Button>
+      </>
+    );
+  }
 
   return (
     <Modal
@@ -156,7 +245,8 @@ export const ActionModal = () => {
         >
           Cancel
         </Button>
-        <Button
+        {actionButtons}
+        {/* <Button
           type="primary"
           ghost
           htmlType="submit"
@@ -166,15 +256,15 @@ export const ActionModal = () => {
           // loading={loading}
         >
           Edit
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           type="primary"
           danger
           loading={deleteLoading}
           onClick={handleDelete}
         >
           Delete
-        </Button>
+        </Button> */}
       </div>
     </Modal>
   );

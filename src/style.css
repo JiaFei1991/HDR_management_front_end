@@ -337,3 +337,49 @@
 }
 
 /* end of main page today list component  */
+
+/* start of login page component  */
+.login-form-container {
+  height: 250px;
+  width: 50%;
+  margin: auto;
+  text-align: center;
+  /* border: 3px solid green; */
+}
+
+.login-header {
+  height: 50px;
+  margin: auto;
+  text-align: center;
+}
+
+.site-layout-background {
+  background: #fff;
+  border-radius: 25px;
+  opacity: 0.8;
+}
+
+h1 {
+  font-weight: bold;
+  font-size: 32px;
+}
+
+h2 {
+  font-weight: bold;
+  font-size: 24px;
+}
+
+/* end of login page component  */
+
+/* start of avatarButton component  */
+.link {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+}
+.link:hover {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00f;
+}
+/* end of avatarButton component  */
