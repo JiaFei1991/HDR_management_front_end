@@ -130,16 +130,17 @@
 
 #scheduler-body-container {
   background-color: #f0f2f5;
+  display: flex;
+  flex-direction: row;
 }
 
-#scheduler-body {
+.scheduler-body {
   background-color: #fcfdfd;
-  padding: 24px;
-  margin-left: 24px;
-  margin-right: 24px;
-  border-radius: 25px;
+  padding: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
   overflow: auto;
-  position: relative;
+  flex-grow: 1;
 }
 
 #hour-cell {
@@ -189,17 +190,10 @@
 }
 
 .event-foreign {
-  /* width: 400px;
-  height: 120px;
-  top: 20px; */
-  /* background-color: red; */
   z-index: 10;
   display: flex;
   flex-direction: column;
-  /* align-content: flex-start; */
-  /* gap: 10px; */
   border-radius: 12px;
-  /* padding: 10px; */
   border: solid 5px gray;
   border-left: solid 10px orange;
   color: #f0f2f5;
@@ -213,17 +207,10 @@
 }
 
 .event {
-  /* width: 400px;
-  height: 120px;
-  top: 20px; */
-  /* background-color: red; */
   z-index: 10;
   display: flex;
   flex-direction: column;
-  /* align-content: flex-start; */
-  /* gap: 10px; */
   border-radius: 12px;
-  /* padding: 10px; */
   border: solid 5px gray;
   border-left: solid 10px orange;
   color: #f0f2f5;

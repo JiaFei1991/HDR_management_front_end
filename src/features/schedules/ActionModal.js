@@ -12,7 +12,7 @@ import {
 } from './scheduleSlice';
 import { populateDay } from './populateDay';
 
-export const ActionModal = () => {
+export const ActionModal = ({ displayingDates }) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
 
@@ -21,8 +21,16 @@ export const ActionModal = () => {
   const selectedEventId = useSelector(
     (state) => state.schedule.selectedEventId
   );
-  const selectedDate = useSelector((state) => state.schedule.selectedDate);
-  const formattedDate = `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`;
+  // day-month-year
+  // const selectedDate = useSelector((state) => state.schedule.selectedDate);
+
+  // formatted as year-month-day
+  const modalSelectedDate = useSelector(
+    (state) => state.schedule.modalSelectedDate
+  );
+  const formattedDate = modalSelectedDate.split('-').reverse().join('-');
+  // `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`
+
   const scheduleMonth = useSelector((state) => state.schedule.scheduleMonth);
   const supervisorsName = useSelector((state) => state.user.supervisorsName);
   const studentsName = useSelector((state) => state.user.studentsName);
@@ -74,8 +82,8 @@ export const ActionModal = () => {
     if (!selectedEvent.startDate && !selectedEvent.endDate) {
       prefillObj = {
         ...prefillObj,
-        prefilledStartDate: `${selectedDate[3]}-${selectedDate[2]}-${selectedDate[1]}`,
-        prefilledEndDate: `${selectedDate[3]}-${selectedDate[2]}-${selectedDate[1]}`
+        prefilledStartDate: modalSelectedDate,
+        prefilledEndDate: modalSelectedDate
       };
     } else {
       prefillObj = {
@@ -121,7 +129,7 @@ export const ActionModal = () => {
       message.success('Schedule deleted successfully!', 4);
 
       // then populate the day with newly fetched events
-      populateDay(selectedDate);
+      populateDay(displayingDates);
       dispatch(setSelectedEventId(undefined));
       dispatch(setDimmer(true));
     }
@@ -157,7 +165,7 @@ export const ActionModal = () => {
       message.success('You have been removed from the schedule!', 4);
 
       // then populate the day with newly fetched events
-      populateDay(selectedDate);
+      populateDay(displayingDates);
       dispatch(setSelectedEventId(undefined));
       dispatch(setDimmer(true));
     }
@@ -189,6 +197,7 @@ export const ActionModal = () => {
       </Button>
     </>
   );
+
   if (
     loggedinUser &&
     scheduleMonth[formattedDate] &&

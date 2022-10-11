@@ -1,6 +1,7 @@
 import Tooltip from '@mui/material/Tooltip';
 
-const HourCell = ({ hour, onRowClick }) => {
+const HourCell = ({ hour, onRowClick, selectedDate }) => {
+  const [weekday, day, month, year] = selectedDate;
   return (
     <div id="hour-cell" key={hour} className="ui internally celled grid">
       <div className="row">
@@ -13,7 +14,7 @@ const HourCell = ({ hour, onRowClick }) => {
               <div
                 id="half-hour-row"
                 className="row"
-                name={`${hour.split(':')[0]}-first`}
+                name={`${day}-${month}-${year}-${hour.split(':')[0]}-first`}
                 onClick={onRowClick}
               >
                 <p></p>
@@ -23,7 +24,7 @@ const HourCell = ({ hour, onRowClick }) => {
               <div
                 id="half-hour-row"
                 className="row"
-                name={`${hour.split(':')[0]}-second`}
+                name={`${day}-${month}-${year}-${hour.split(':')[0]}-second`}
                 onClick={onRowClick}
               >
                 <p></p>

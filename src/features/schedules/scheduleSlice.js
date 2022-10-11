@@ -27,22 +27,21 @@ const getIdFromName = (objArray, participantsName) => {
   return idArray;
 };
 
+const initialDate = new Date().toJSON().slice(0, 10).split('-').reverse();
+
 const initialState = {
-  today: [
-    new Date().getDay().toString(),
-    ...new Date().toJSON().slice(0, 10).split('-').reverse()
-  ],
-  selectedDate: [
-    new Date().getDay().toString(),
-    ...new Date().toJSON().slice(0, 10).split('-').reverse()
-  ],
+  today: [new Date().getDay().toString(), ...initialDate],
+  selectedDate: [new Date().getDay().toString(), ...initialDate],
+  modalSelectedDate: `${initialDate[2]}-${initialDate[1]}-${initialDate[0]}`,
   scheduleMonth: {},
   dimmer: '',
   eventModalOpen: false,
   actionModalOpen: false,
   selectedEventId: undefined,
   modalPrefill: {},
-  monthNotification: []
+  monthNotification: [],
+  initTime: [],
+  createbuttonopen: false
 };
 
 export const createNewSchedule = createAsyncThunk(
@@ -227,6 +226,12 @@ const ScheduleSlice = createSlice({
         state.dimmer = '';
       }
     },
+    setInitTime: (state, action) => {
+      state.initTime = action.payload;
+    },
+    setModalSelectedDate: (state, action) => {
+      state.modalSelectedDate = action.payload;
+    },
     setEventModalOpen: (state, action) => {
       state.eventModalOpen = action.payload;
     },
@@ -238,6 +243,9 @@ const ScheduleSlice = createSlice({
     },
     setModalPrefill: (state, action) => {
       state.modalPrefill = action.payload;
+    },
+    setCreatebuttonopen: (state, action) => {
+      state.createbuttonopen = action.payload;
     }
   },
   extraReducers(builder) {
@@ -246,19 +254,16 @@ const ScheduleSlice = createSlice({
         return initialState;
       })
       .addCase(getCurrentDaySchedules.fulfilled, (state, action) => {
-        // clear the current state scheduleMonth before assigning the new ones
-        state.scheduleMonth[
-          `${state.selectedDate[1]}-${state.selectedDate[2]}-${state.selectedDate[3]}`
-        ] = {};
-        if (action.payload && action.payload.data.data.length !== 0) {
-          const eventArray = action.payload.data.data;
-          // const date = eventArray[0].eventDate;
+        if (action.payload && action.payload.status === 'success') {
+          // clear the current state scheduleMonth before assigning the new ones
+          state.scheduleMonth[action.payload.data.date] = {};
+          if (action.payload.data.data.length !== 0) {
+            const eventArray = action.payload.data.data;
 
-          eventArray.forEach((event) => {
-            state.scheduleMonth[
-              `${state.selectedDate[1]}-${state.selectedDate[2]}-${state.selectedDate[3]}`
-            ][event._id] = event;
-          });
+            eventArray.forEach((event) => {
+              state.scheduleMonth[action.payload.data.date][event._id] = event;
+            });
+          }
         }
       })
       .addCase(getScheduleNotificationOfMonth.fulfilled, (state, action) => {
@@ -269,13 +274,22 @@ const ScheduleSlice = createSlice({
   }
 });
 
+export const migrations = {
+  0: (state) => initialState,
+  1: (state) => initialState,
+  2: (state) => initialState
+};
+
 export const {
+  setInitTime,
+  setModalSelectedDate,
   selectDate,
   addScheduleToDate,
   setDimmer,
   setEventModalOpen,
   setActionModalOpen,
   setSelectedEventId,
-  setModalPrefill
+  setModalPrefill,
+  setCreatebuttonopen
 } = ScheduleSlice.actions;
 export default ScheduleSlice.reducer;

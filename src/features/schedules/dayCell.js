@@ -1,34 +1,22 @@
-import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import '../../style.css';
 
 import HourCell from './hourCell';
 import NewEventModal from './newEventModal';
 import { ActionModal } from './ActionModal';
-import { populateDay } from './populateDay';
-import { setEventModalOpen, setDimmer } from './scheduleSlice';
+import {
+  setEventModalOpen,
+  setInitTime,
+  setModalSelectedDate
+} from './scheduleSlice';
 
-const DayCell = () => {
+const DayCell = ({ selectedDate, displayingDates }) => {
   const dispatch = useDispatch();
-  const [initTime, setInitTime] = useState(['00:00', '00:00']);
-
-  const dimmer = useSelector((state) => state.schedule.dimmer);
-  const selectedDate = useSelector((state) => state.schedule.selectedDate);
-
-  useEffect(() => {
-    dispatch(setDimmer(true));
-  }, [dispatch]);
-
-  useEffect(() => {
-    populateDay(selectedDate);
-  }, [selectedDate, dispatch]);
 
   // handle row click
   const onRowClick = (e) => {
-    dispatch(setEventModalOpen(true));
-
     const eventName = e.target.getAttribute('name');
-    let [hour, min] = eventName.split('-');
+    let [day, month, year, hour, min] = eventName.split('-');
     const startMin = min === 'first' ? '00' : '30';
 
     let endHour, endMin;
@@ -48,29 +36,33 @@ const DayCell = () => {
     }
 
     const prefillTime = [`${hour}:${startMin}`, `${endHour}:${endMin}`];
+    const prefillDate = `${year}-${month}-${day}`;
 
-    setInitTime(prefillTime);
+    dispatch(setInitTime(prefillTime));
+
+    dispatch(setModalSelectedDate(prefillDate));
+
+    dispatch(setEventModalOpen(true));
   };
 
   // generate hour cells
   let cellStack = [];
   for (let i = 0; i < 24; i++) {
     cellStack.push(
-      <HourCell key={i} hour={`${i}:00`} onRowClick={onRowClick} />
+      <HourCell
+        key={`${selectedDate[1]}-${i}`}
+        hour={`${i}:00`}
+        onRowClick={onRowClick}
+        selectedDate={selectedDate}
+      />
     );
   }
 
   return (
-    <div id="scheduler-body">
+    <div className="scheduler-body">
       {cellStack}
-      <div
-        className={`ui ${dimmer} inverted dimmer`}
-        style={{ position: 'absolute' }}
-      >
-        <div className="ui text loader">Loading</div>
-      </div>
-      <NewEventModal initTime={initTime} />
-      <ActionModal />
+      <NewEventModal displayingDates={displayingDates} />
+      <ActionModal displayingDates={displayingDates} />
     </div>
   );
 };

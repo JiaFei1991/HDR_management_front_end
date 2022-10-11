@@ -17,13 +17,17 @@ import {
   setEventModalOpen,
   updateScheduleById,
   setSelectedEventId,
+  setCreatebuttonopen,
   setDimmer
 } from './scheduleSlice';
 
-const NewEventModal = ({ initTime }) => {
+const NewEventModal = ({ displayingDates }) => {
   const dispatch = useDispatch();
+  const initTime = useSelector((state) => state.schedule.initTime);
   const selectedDate = useSelector((state) => state.schedule.selectedDate);
-  const [weekDay, day, month, year] = selectedDate;
+  const modalSelectedDate = useSelector(
+    (state) => state.schedule.modalSelectedDate
+  );
   const currentUser = useSelector((state) => state.auth.loggedinUser);
   const open = useSelector((state) => state.schedule.eventModalOpen);
   const prefillObj = useSelector((state) => state.schedule.modalPrefill);
@@ -32,6 +36,9 @@ const NewEventModal = ({ initTime }) => {
   );
   const supervisorsName = useSelector((state) => state.user.supervisorsName);
   const studentsName = useSelector((state) => state.user.studentsName);
+  const createbuttonopen = useSelector(
+    (state) => state.schedule.createbuttonopen
+  );
 
   const [startTime, setStartTime] = useState('00:00');
   const [endTime, setEndTime] = useState('00:00');
@@ -41,8 +48,9 @@ const NewEventModal = ({ initTime }) => {
   const [checked, setChecked] = useState(false);
   const [location, setLocation] = useState('None');
   const [participants, setParticipants] = useState([]);
-  const [startDate, setStartDate] = useState(`${year}-${month}-${day}`);
-  const [endDate, setEndDate] = useState(`${year}-${month}-${day}`);
+  const [startDate, setStartDate] = useState('1970-01-01');
+  const [endDate, setEndDate] = useState('1970-01-01');
+  const [eventDatePick, setEventDatePick] = useState('01-01-1970');
 
   const [timeDisabled, setTimeDisabled] = useState(false);
   const [dateDisabled, setDateDisabled] = useState(false);
@@ -75,9 +83,14 @@ const NewEventModal = ({ initTime }) => {
   }, [initTime]);
 
   useEffect(() => {
-    setStartDate(`${year}-${month}-${day}`);
-    setEndDate(`${year}-${month}-${day}`);
-  }, [selectedDate]);
+    if (!createbuttonopen) {
+      setStartDate(modalSelectedDate);
+      setEndDate(modalSelectedDate);
+    } else {
+      setStartDate(`${selectedDate[3]}-${selectedDate[2]}-${selectedDate[1]}`);
+      setEndDate(`${selectedDate[3]}-${selectedDate[2]}-${selectedDate[1]}`);
+    }
+  }, [createbuttonopen, selectedDate, modalSelectedDate]);
 
   useEffect(() => {
     if (repeat === 'None') {
@@ -86,6 +99,12 @@ const NewEventModal = ({ initTime }) => {
       setDateDisabled(false);
     }
   }, [repeat]);
+
+  useEffect(() => {
+    setEventDatePick(
+      `${selectedDate[3]}-${selectedDate[2]}-${selectedDate[1]}`
+    );
+  }, [selectedDate]);
 
   const loadingAndDisable = (value) => {
     setLoading(value);
@@ -164,42 +183,41 @@ const NewEventModal = ({ initTime }) => {
       }
     }
 
-    const currentLocalStates = {
+    const [year, month, day] = modalSelectedDate.split('-');
+    let currentLocalStates = {
       title,
       description,
       repeat,
       allday: checked,
       userID: currentUser._id,
-      eventDate: `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`,
+      eventDate: `${day}-${month}-${year}`,
       eventLengthInMin,
       location,
       participants,
-      startTime: new Date(
-        selectedDate[3],
-        selectedDate[2] - 1,
-        selectedDate[1],
-        ...startTime.split(':')
-      ),
-      endTime: new Date(
-        selectedDate[3],
-        selectedDate[2] - 1,
-        selectedDate[1],
-        ...endTime.split(':')
-      ),
+      startTime: new Date(year, month - 1, day, ...startTime.split(':')),
+      endTime: new Date(year, month - 1, day, ...endTime.split(':')),
       startDate,
       endDate
     };
 
+    if (createbuttonopen) {
+      currentLocalStates = {
+        ...currentLocalStates,
+        eventDate: eventDatePick.split('-').reverse().join('-')
+      };
+    }
+
     console.log(currentLocalStates);
     loadingAndDisable(true);
 
+    // debugger;
     // if prefill doesnt exist, submit form to create new event
     if (Object.keys(prefillObj).length === 0) {
       const res = await dispatch(
         createNewSchedule(currentLocalStates)
       ).unwrap();
       if (res && res.status === 'success') {
-        populateDay(selectedDate);
+        populateDay(displayingDates);
         dispatch(setDimmer(true));
 
         message.success('Event created successfully.', 4);
@@ -214,7 +232,7 @@ const NewEventModal = ({ initTime }) => {
       ).unwrap();
 
       if (res && res.status === 'success') {
-        populateDay(selectedDate);
+        populateDay(displayingDates);
         dispatch(setSelectedEventId(undefined));
         dispatch(setDimmer(true));
 
@@ -224,6 +242,7 @@ const NewEventModal = ({ initTime }) => {
 
     // clear the prefill content
     dispatch(setModalPrefill({}));
+    dispatch(setCreatebuttonopen(false));
     loadingAndDisable(false);
     dispatch(setEventModalOpen(false));
     resetForm();
@@ -236,6 +255,7 @@ const NewEventModal = ({ initTime }) => {
 
     // clear the prefill content
     dispatch(setModalPrefill({}));
+    dispatch(setCreatebuttonopen(false));
   };
 
   const resetForm = () => {
@@ -264,7 +284,11 @@ const NewEventModal = ({ initTime }) => {
 
   const onCheckboxChange = (event) => {
     setChecked(event.target.checked);
-    event.target.checked ? setTimeDisabled(true) : setTimeDisabled(false);
+    if (event.target.checked) {
+      setTimeDisabled(true);
+    } else {
+      setTimeDisabled(false);
+    }
   };
 
   const onRepeatChange = (event) => {
@@ -281,6 +305,33 @@ const NewEventModal = ({ initTime }) => {
 
   const onEndDateChange = (event) => {
     setEndDate(event.target.value);
+  };
+
+  const onEventDateChange = (event) => {
+    setEventDatePick(event.target.value);
+  };
+
+  const addeventDatePicker = (createbuttonopen) => {
+    let component;
+    if (createbuttonopen) {
+      component = (
+        <TextField
+          id="event-form-eventDate"
+          label="Event date"
+          type="date"
+          value={eventDatePick}
+          onChange={onEventDateChange}
+          // disabled={dateDisabled}
+          sx={{ width: 220 }}
+          InputLabelProps={{
+            shrink: true
+          }}
+        />
+      );
+    } else {
+      component = <></>;
+    }
+    return component;
   };
 
   return (
@@ -323,7 +374,7 @@ const NewEventModal = ({ initTime }) => {
                     )
                   : []
               }
-              participants={participants}
+              participants={participants || []}
               setParticipants={setParticipants}
             />
 
@@ -334,7 +385,7 @@ const NewEventModal = ({ initTime }) => {
                 label="Start time"
                 name="startTime"
                 type="time"
-                value={startTime}
+                value={startTime || '00:00'}
                 disabled={timeDisabled}
                 onChange={onStartTimeChange}
                 InputLabelProps={{
@@ -352,7 +403,7 @@ const NewEventModal = ({ initTime }) => {
                 label="End time"
                 name="endTime"
                 type="time"
-                value={endTime}
+                value={endTime || '00:00'}
                 disabled={timeDisabled}
                 onChange={onEndTimeChange}
                 InputLabelProps={{
@@ -363,6 +414,8 @@ const NewEventModal = ({ initTime }) => {
                 }}
                 sx={{ width: 150 }}
               />
+
+              {addeventDatePicker(createbuttonopen)}
             </div>
 
             <TextField
@@ -381,7 +434,7 @@ const NewEventModal = ({ initTime }) => {
                 <InputLabel>Repeat</InputLabel>
                 <Select
                   id="event-form-repeat-select"
-                  value={repeat}
+                  value={repeat || 'None'}
                   label="Repeat"
                   onChange={onRepeatChange}
                   disabled={disabled}
@@ -398,7 +451,7 @@ const NewEventModal = ({ initTime }) => {
                 id="event-form-startDate"
                 label="Start from"
                 type="date"
-                value={startDate}
+                value={startDate || '1970-01-01'}
                 onChange={onStartDateChange}
                 disabled={dateDisabled}
                 sx={{ width: 220 }}
@@ -411,7 +464,7 @@ const NewEventModal = ({ initTime }) => {
                 id="event-form-endDate"
                 label="Until"
                 type="date"
-                value={endDate}
+                value={endDate || '1970-01-01'}
                 onChange={onEndDateChange}
                 disabled={dateDisabled}
                 sx={{ width: 220 }}
@@ -423,7 +476,7 @@ const NewEventModal = ({ initTime }) => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    value={checked}
+                    value={checked || false}
                     onChange={onCheckboxChange}
                     disabled={disabled}
                     name="AlldayCheckbox"

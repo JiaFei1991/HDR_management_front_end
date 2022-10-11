@@ -93,11 +93,6 @@ const HomePage = () => {
     dispatch(setDimmer(true));
     const selectedDate = moment._d.toString().split(' ').slice(0, 4);
     dispatch(selectDate(selectedDate));
-    // dispatch(
-    //   getCurrentDaySchedules(
-    //     `${selectedDate[1]}-${selectedDate[2]}-${selectedDate[3]}`
-    //   )
-    // );
   };
 
   let studentMenuItems = [
@@ -229,7 +224,7 @@ const HomePage = () => {
             <Content
               className="site-layout-background"
               style={{
-                padding: 24,
+                padding: 12,
                 margin: 0,
                 minHeight: 280
               }}

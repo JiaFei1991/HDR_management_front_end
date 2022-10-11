@@ -2,14 +2,24 @@ import { store } from '../../app/store';
 import { getRandomColor } from '../util/randomColor';
 import { setActionModalOpen, setSelectedEventId } from './scheduleSlice';
 import { vwToPx } from '../util/layoutCalc';
+import { setModalSelectedDate } from './scheduleSlice';
+
+const setParentElement = (target) => {
+  const eventName = target.parentElement.getAttribute('name');
+  let [day, month, year, hour, min] = eventName.split('-');
+  const prefillDate = `${year}-${month}-${day}`;
+  store.dispatch(setModalSelectedDate(prefillDate));
+};
 
 const onEventClick = (e) => {
   e.stopPropagation();
 
   console.log(e.target);
+
   if (e.target) {
     if (e.target.id && e.target.id !== '') {
       store.dispatch(setSelectedEventId(e.target.id.split('-')[1]));
+      setParentElement(e.target);
     } else if (
       [
         'eventDescription',
@@ -21,8 +31,10 @@ const onEventClick = (e) => {
       let cardId;
       if (['eventTitle', 'eventDuration'].includes(e.target.className)) {
         cardId = e.target.parentElement.parentElement.id;
+        setParentElement(e.target.parentElement.parentElement);
       } else {
         cardId = e.target.parentElement.id;
+        setParentElement(e.target.parentElement);
       }
       store.dispatch(setSelectedEventId(cardId.split('-')[1]));
     }
@@ -40,13 +52,17 @@ export const renderEventCard = ({
   scheduleId,
   eventLengthInMin,
   myEvent,
-  isThereAllday
+  isThereAllday,
+  selectedDate
 }) => {
+  const [weekday, day, month, year] = selectedDate;
   let targetElement;
   const eventCard = document.createElement('div');
   eventCard.addEventListener('click', onEventClick);
 
-  const fullWidth = document.getElementsByName('0-first')[0].clientWidth;
+  const fullWidth = document.getElementsByName(
+    `${day}-${month}-${year}-0-first`
+  )[0].clientWidth;
 
   let foreignEventClassName;
   myEvent ? (foreignEventClassName = '') : (foreignEventClassName = '-foreign');
@@ -124,7 +140,9 @@ export const renderEventCard = ({
 
     // identify the target
     targetElement = document.getElementsByName(
-      `${Number(startHour)}-${Number(startMin) <= 30 ? 'first' : 'second'}`
+      `${day}-${month}-${year}-${Number(startHour)}-${
+        Number(startMin) <= 30 ? 'first' : 'second'
+      }`
     );
   } else {
     eventCard.classList.add(`event-allday${foreignEventClassName}`);
@@ -136,7 +154,9 @@ export const renderEventCard = ({
     eventTitle.innerText = `${title}`;
     eventCard.appendChild(eventTitle);
 
-    targetElement = document.getElementsByName('0-first');
+    targetElement = document.getElementsByName(
+      `${day}-${month}-${year}-0-first`
+    );
   }
 
   // add card to target

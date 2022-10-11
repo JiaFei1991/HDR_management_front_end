@@ -23,7 +23,8 @@ export function vwToPx(vw) {
 }
 
 export function resizeEventCard(isThereAllday, target) {
-  const fullWidth = document.getElementsByName('0-first')[0].clientWidth;
+  // const fullWidth = document.getElementsByName('0-first')[0].clientWidth;
+  const fullWidth = target.parentElement.clientWidth;
 
   let cardWidth;
   isThereAllday
