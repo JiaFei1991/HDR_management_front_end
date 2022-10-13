@@ -14,19 +14,6 @@ const extractTokens = (fn, actionName) => {
   return { token, refreshToken };
 };
 
-const getIdFromName = (objArray, participantsName) => {
-  let idArray = [];
-  participantsName.forEach((name) => {
-    objArray.forEach((obj) => {
-      if (obj.name === name) {
-        idArray.push(obj._id);
-      }
-    });
-  });
-
-  return idArray;
-};
-
 const initialDate = new Date().toJSON().slice(0, 10).split('-').reverse();
 
 const initialState = {
@@ -127,14 +114,6 @@ export const updateScheduleById = createAsyncThunk(
   async (dataObj, { getState }) => {
     const tokenObj = extractTokens(getState, 'updateScheduleById');
     if (tokenObj === 'token missing') return;
-
-    const { supervisorsName } = getState().user;
-    const { studentsName } = getState().user;
-
-    // const idArray = getIdFromName(
-    //   [...supervisorsName, ...studentsName],
-    //   dataObj.data.participants
-    // );
 
     const res = await apiInstance({
       url: `/schedules/${dataObj.scheduleId}`,

@@ -21,6 +21,19 @@ import {
   setDimmer
 } from './scheduleSlice';
 
+const getIdFromName = (objArray, participantsName) => {
+  let idArray = [];
+  participantsName.forEach((name) => {
+    objArray.forEach((obj) => {
+      if (obj.name === name) {
+        idArray.push(obj._id);
+      }
+    });
+  });
+
+  return idArray;
+};
+
 const NewEventModal = ({ displayingDates }) => {
   const dispatch = useDispatch();
   const initTime = useSelector((state) => state.schedule.initTime);
@@ -224,10 +237,17 @@ const NewEventModal = ({ displayingDates }) => {
       }
     } else {
       // otherwise, update the existing event
+      debugger;
       const res = await dispatch(
         updateScheduleById({
           scheduleId: selectedEventId,
-          data: currentLocalStates
+          data: {
+            ...currentLocalStates,
+            participants: getIdFromName(
+              [...supervisorsName, ...studentsName],
+              currentLocalStates.participants
+            )
+          }
         })
       ).unwrap();
 
