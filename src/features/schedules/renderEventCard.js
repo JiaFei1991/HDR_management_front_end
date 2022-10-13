@@ -45,8 +45,6 @@ const onEventClick = (e) => {
 export const renderEventCard = ({
   title,
   startTime,
-  endTime,
-  repeat,
   description,
   allday,
   scheduleId,

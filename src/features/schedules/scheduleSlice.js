@@ -131,15 +131,15 @@ export const updateScheduleById = createAsyncThunk(
     const { supervisorsName } = getState().user;
     const { studentsName } = getState().user;
 
-    const idArray = getIdFromName(
-      [...supervisorsName, ...studentsName],
-      dataObj.data.participants
-    );
+    // const idArray = getIdFromName(
+    //   [...supervisorsName, ...studentsName],
+    //   dataObj.data.participants
+    // );
 
     const res = await apiInstance({
       url: `/schedules/${dataObj.scheduleId}`,
       method: 'patch',
-      data: { ...dataObj.data, participants: idArray },
+      data: dataObj.data,
       headers: {
         authorization: `Bearer ${tokenObj.token}`,
         refreshtoken: `Bearer ${tokenObj.refreshToken}`
