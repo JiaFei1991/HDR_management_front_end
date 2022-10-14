@@ -47,6 +47,15 @@ const DayCell = ({ selectedDate, displayingDates }) => {
 
   // generate hour cells
   let cellStack = [];
+  cellStack.push(
+    <div key={'date-row'}>
+      {new Date(
+        `${selectedDate[3]}-
+        ${selectedDate[2]}-
+        ${selectedDate[1]}`
+      ).toLocaleDateString('en-au')}
+    </div>
+  );
   for (let i = 0; i < 24; i++) {
     cellStack.push(
       <HourCell

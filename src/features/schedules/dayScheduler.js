@@ -18,7 +18,7 @@ const generateDisplayingDates = (today, numberOfDays) => {
     dateObj.setDate(dateObj.getDate() + 1);
     dateArray.push([
       dateObj.getDay().toString(),
-      ...new Date(dateObj).toLocaleDateString().split('/')
+      ...new Date(dateObj).toLocaleDateString('en-au').split('/')
     ]);
   }
   return dateArray;

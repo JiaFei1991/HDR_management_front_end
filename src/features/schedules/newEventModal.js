@@ -237,7 +237,7 @@ const NewEventModal = ({ displayingDates }) => {
       }
     } else {
       // otherwise, update the existing event
-      debugger;
+      //   debugger;
       const res = await dispatch(
         updateScheduleById({
           scheduleId: selectedEventId,

@@ -153,12 +153,11 @@ const HomePage = () => {
   };
 
   const dateCellRender = (value) => {
-    // debugger;
     if (monthNotification) {
       for (let i = 0; i < monthNotification.length; i++) {
         if (
           checkDateEquality(
-            value._d.toLocaleDateString().split('/'),
+            value._d.toLocaleDateString('en-au').split('/'),
             monthNotification[i].split('-')
           )
         ) {
