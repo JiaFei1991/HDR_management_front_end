@@ -1,6 +1,6 @@
 {
   "extends": ["prettier"],
-  "parser": "babel-eslint",
+  // "parser": "babel-eslint",
   "rules": {
     "spaced-comment": "off",
     // TODO: turn this back on before going into prod to remove all console log
